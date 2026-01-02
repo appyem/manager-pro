@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel del DJ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: linear-gradient(135deg, #7e22ce 0%, #4c1d95 100%); min-height: 100vh; padding: 16px; color: white; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* Header */
+    .header { background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+    .header-content h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .header-content h1 span { font-size: 32px; }
+    .header-content p { font-size: 14px; opacity: 0.8; }
+    
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .stat-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .stat-label { font-size: 14px; margin-bottom: 8px; opacity: 0.8; }
+    .stat-value { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+    .stat-value.pendientes { color: #fbbf24; }
+    .stat-value.reproducidas { color: #34d399; }
+    
+    /* Main Content */
+    .main-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+    .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+    .card h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card h2 span { font-size: 24px; }
+    
+    /* Peticiones */
+    .peticiones-list { max-height: 600px; overflow-y: auto; }
+    .peticion-item { padding: 16px; margin-bottom: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 4px solid #fbbf24; }
+    .peticion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .peticion-orden { background: #fbbf24; color: #1c1917; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .peticion-cancion { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .peticion-artista { font-size: 14px; color: #f3f4f6; opacity: 0.8; margin-bottom: 12px; }
+    .peticion-info { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.8; }
+    .reproducida-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 12px; transition: transform 0.2s; }
+    .reproducida-btn:hover { transform: translateY(-2px); }
+    .reproducida-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    /* Historial */
+    .historial-list { max-height: 400px; overflow-y: auto; }
+    .historial-item { padding: 12px; margin-bottom: 8px; background: rgba(52, 211, 153, 0.1); border-radius: 12px; border-left: 4px solid #34d399; display: flex; align-items: center; gap: 12px; }
+    .historial-check { font-size: 20px; color: #34d399; }
+    
+    /* Botón limpiar */
+    .limpiar-btn { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+    .limpiar-btn:hover { background: rgba(239, 68, 68, 0.3); }
+    
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .header { padding: 16px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <h1><span>🎧</span> Panel del DJ</h1>
+        <p id="tenantInfo">Cargando información del tenant...</p>
+      </div>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Peticiones Pendientes</div>
+        <div class="stat-value pendientes" id="pendientesCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Canciones Reproducidas</div>
+        <div class="stat-value reproducidas" id="reproducidasCount">0</div>
+      </div>
+    </div>
+    
+    <!-- Contenido Principal -->
+    <div class="main-grid">
+      <!-- Peticiones Pendientes -->
+      <div class="card">
+        <h2><span>📝</span> Peticiones Pendientes</h2>
+        <div id="peticionesContainer" class="peticiones-list">
+          <p style="text-align: center; opacity: 0.7; padding: 20px;">No hay peticiones pendientes</p>
+        </div>
+      </div>
+      
+      <!-- Historial de Reproducidas -->
+      <div class="card">
+        <h2><span>✅</span> Historial de Reproducidas</h2>
+        <div id="historialContainer" class="historial-list">
+          <p style="text-align: center; opacity: 0.7; padding: 20px;">No hay canciones reproducidas</p>
+        </div>
+        <button id="limpiarHistorial" class="limpiar-btn" style="display: none;">Limpiar Historial</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Importar Firebase - CORREGIDO: SIN ESPACIOS AL FINAL
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      getDocs,
+      addDoc,
+      updateDoc,
+      query,
+      where,
+      orderBy,
+      serverTimestamp,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Configuración
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
+      authDomain: "manager-pro-ec292.firebaseapp.com",
+      projectId: "manager-pro-ec292",
+      storageBucket: "manager-pro-ec292.firebasestorage.app",
+      messagingSenderId: "1077289364014",
+      appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Variables
+    let currentTenantId = null;
+    let cancionesReproducidas = new Set();
+    let unsubscribePeticiones = null;
+
+    // Detectar tenant desde URL
+    function detectarTenant() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('tid');
+    }
+
+    // Inicializar DJ
+    async function initDJ() {
+      const tenantId = detectarTenant();
+      
+      if (!tenantId) {
+        document.getElementById('tenantInfo').textContent = '❌ Error: URL inválida. Use ?tid=...';
+        alert('Acceda al panel del DJ desde el panel de administrador.');
+        return;
+      }
+      
+      currentTenantId = tenantId;
+      document.getElementById('tenantInfo').textContent = `Tenant: ${tenantId.substring(0, 8)}...`;
+      iniciarEscuchaPeticiones();
+      cargarHistorial();
+    }
+
+    // Escuchar peticiones en tiempo real
+    function iniciarEscuchaPeticiones() {
+      if (unsubscribePeticiones) {
+        unsubscribePeticiones();
+      }
+      
+      const peticionesRef = collection(db, `tenants/${currentTenantId}/peticionesCancion`);
+      const q = query(peticionesRef, where('estado', '==', 'pendiente'), orderBy('createdAt', 'asc'));
+      
+      unsubscribePeticiones = onSnapshot(q, (snapshot) => {
+        const peticiones = [];
+        snapshot.forEach(doc => {
+          peticiones.push({ id: doc.id, ...doc.data() });
+        });
+        renderPeticiones(peticiones);
+      }, (error) => {
+        console.error('Error en listener de peticiones:', error);
+        alert('Error al cargar peticiones: ' + error.message);
+      });
+    }
+
+    // Renderizar peticiones
+    function renderPeticiones(peticiones) {
+      const container = document.getElementById('peticionesContainer');
+      const countElement = document.getElementById('pendientesCount');
+      
+      countElement.textContent = peticiones.length;
+      
+      if (peticiones.length === 0) {
+        container.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px;">No hay peticiones pendientes</p>';
+        return;
+      }
+      
+      let html = '';
+      peticiones.forEach((peticion, index) => {
+        const key = peticion.artista ? `${peticion.cancion} - ${peticion.artista}` : peticion.cancion;
+        const yaReproducida = cancionesReproducidas.has(key);
+        
+        html += `
+          <div class="peticion-item">
+            <div class="peticion-header">
+              <div class="peticion-orden">#${index + 1}</div>
+            </div>
+            <div class="peticion-cancion">${peticion.cancion}</div>
+            ${peticion.artista ? `<div class="peticion-artista">por ${peticion.artista}</div>` : ''}
+            <div class="peticion-info">
+              <span>Mesa: ${peticion.mesa}</span>
+              <span>Mesero: ${peticion.mesero}</span>
+            </div>
+            ${!yaReproducida ? `
+              <button class="reproducida-btn" onclick="marcarReproducida('${peticion.id}', '${peticion.cancion}', '${peticion.artista || ''}')">
+                <span>✓</span> Marcar como Reproducida
+              </button>
+            ` : `
+              <div style="padding: 8px 16px; background: rgba(52, 211, 153, 0.2); border-radius: 8px; text-align: center; color: #34d399; font-weight: 600;">
+                Ya Reproducida
+              </div>
+            `}
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Marcar como reproducida
+    window.marcarReproducida = async function(peticionId, cancion, artista) {
+      if (!currentTenantId) return;
+      
+      try {
+        const peticionRef = doc(db, `tenants/${currentTenantId}/peticionesCancion`, peticionId);
+        await updateDoc(peticionRef, {
+          estado: 'reproducida',
+          reproducidaAt: serverTimestamp()
+        });
+        
+        const key = artista ? `${cancion} - ${artista}` : cancion;
+        cancionesReproducidas.add(key);
+        guardarHistorial();
+        renderHistorial();
+        document.getElementById('limpiarHistorial').style.display = 'block';
+        
+      } catch (error) {
+        alert('❌ Error al marcar como reproducida: ' + error.message);
+      }
+    };
+
+    // Gestión del historial
+    function cargarHistorial() {
+      const saved = localStorage.getItem(`dj_historial_${currentTenantId}`);
+      if (saved) {
+        cancionesReproducidas = new Set(JSON.parse(saved));
+        renderHistorial();
+        if (cancionesReproducidas.size > 0) {
+          document.getElementById('limpiarHistorial').style.display = 'block';
+        }
+      }
+    }
+
+    function guardarHistorial() {
+      localStorage.setItem(`dj_historial_${currentTenantId}`, JSON.stringify(Array.from(cancionesReproducidas)));
+    }
+
+    function renderHistorial() {
+      const container = document.getElementById('historialContainer');
+      const countElement = document.getElementById('reproducidasCount');
+      
+      countElement.textContent = cancionesReproducidas.size;
+      
+      if (cancionesReproducidas.size === 0) {
+        container.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px;">No hay canciones reproducidas</p>';
+        return;
+      }
+      
+      let html = '';
+      cancionesReproducidas.forEach(cancion => {
+        html += `
+          <div class="historial-item">
+            <span class="historial-check">✓</span>
+            <span>${cancion}</span>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Limpiar historial
+    document.getElementById('limpiarHistorial').addEventListener('click', function() {
+      if (confirm('¿Estás seguro de limpiar el historial de canciones reproducidas?')) {
+        cancionesReproducidas.clear();
+        guardarHistorial();
+        renderHistorial();
+        this.style.display = 'none';
+      }
+    });
+
+    // Iniciar
+    initDJ();
+
+    // Limpiar listener al salir
+    window.addEventListener('beforeunload', () => {
+      if (unsubscribePeticiones) {
+        unsubscribePeticiones();
+      }
+    });
+  </script>
+</body>
+</html>
+

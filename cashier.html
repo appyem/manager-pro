@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Mesero</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); min-height: 100vh; padding: 16px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* Header */
+    .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; }
+    .header-content h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .header-content p { font-size: 14px; opacity: 0.9; }
+    
+    /* Tabs */
+    .tabs { display: flex; overflow-x: auto; padding: 8px 0; margin-bottom: 24px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .tab-btn { padding: 12px 24px; border: none; background: none; font-size: 16px; font-weight: 600; color: #6b7280; cursor: pointer; border-radius: 8px; white-space: nowrap; margin: 0 4px; }
+    .tab-btn.active { background: #dbeafe; color: #1d4ed8; }
+    .tab-btn:hover:not(.active) { background: #f9fafb; }
+    
+    /* Tab Content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Content Cards */
+    .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .card h2 { font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+    .card p { color: #6b7280; line-height: 1.6; }
+    
+    /* Mesas por zona */
+    .zonas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
+    .zona-card { border-radius: 12px; padding: 16px; }
+    .zona-title { font-weight: 600; margin-bottom: 12px; color: #1d4ed8; }
+    .mesa-item { padding: 10px; margin: 4px 0; background: #f8fafc; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .mesa-item:hover { background: #dbeafe; }
+    .mesa-item.selected { background: #dbeafe; border-left: 4px solid #1d4ed8; }
+    
+    /* Menú */
+    .categorias-filtros { margin-bottom: 16px; }
+    .categoria-btn { padding: 6px 12px; margin: 0 4px 8px 0; border: 1px solid #e2e8f0; border-radius: 20px; background: white; cursor: pointer; }
+    .categoria-btn.active { background: #dbeafe; border-color: #1d4ed8; color: #1d4ed8; }
+    .articulos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .articulo-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+    .articulo-nombre { font-weight: 600; margin-bottom: 4px; }
+    .articulo-precio { color: #059669; font-weight: 700; }
+    .articulo-stock { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .agregar-btn { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; margin-top: 8px; cursor: pointer; font-size: 14px; }
+    
+    /* Carrito */
+    .carrito-items { margin-bottom: 16px; }
+    .carrito-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+    .carrito-total { font-size: 20px; font-weight: 700; text-align: right; margin-top: 16px; color: #059669; }
+    .crear-pedido-btn { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; }
+    
+    /* DJ Form */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px; }
+    .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; }
+    
+    @media (max-width: 768px) {
+      .header { padding: 16px; }
+      .tabs { padding: 4px 0; }
+      .tab-btn { padding: 8px 16px; font-size: 14px; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <h1 id="meseroNombre">Cargando Panel...</h1>
+        <p id="tenantInfo">Verificando acceso...</p>
+      </div>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="mesas">🪑 Mesas</button>
+      <button class="tab-btn" data-tab="menu">🍎 Menú</button>
+      <button class="tab-btn" data-tab="carrito">🛒 Carrito</button>
+      <button class="tab-btn" data-tab="pedidos">📋 Pedidos</button>
+      <button class="tab-btn" data-tab="pagos">💰 Pagos</button>
+      <button class="tab-btn" data-tab="dj">🎵 DJ</button>
+    </div>
+    
+    <!-- Mesas Tab -->
+    <div class="tab-content active" id="tab-mesas">
+      <div class="card">
+        <h2>🪑 Selección de Mesa</h2>
+        <p>Selecciona la mesa que deseas atender</p>
+        <div id="mesasContainer">
+          <p style="text-align: center; color: #6b7280;">Cargando mesas...</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Menú Tab -->
+    <div class="tab-content" id="tab-menu">
+      <div class="card">
+        <h2>🍎 Menú de Bebidas</h2>
+        <div id="menuContainer">
+          <p style="text-align: center; color: #6b7280;">Cargando menú...</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Carrito Tab -->
+    <div class="tab-content" id="tab-carrito">
+      <div class="card">
+        <h2>🛒 Carrito de Pedidos</h2>
+        <div id="carritoContainer">
+          <p style="text-align: center; color: #6b7280;">Carrito vacío</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pedidos Tab -->
+    <div class="tab-content" id="tab-pedidos">
+      <div class="card">
+        <h2>📋 Pedidos Activos</h2>
+        <div id="pedidosContainer">
+          <p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pagos Tab -->
+    <div class="tab-content" id="tab-pagos">
+      <div class="card">
+        <h2>💰 Registro de Pagos</h2>
+        <div id="pagosContainer">
+          <p style="text-align: center; color: #6b7280;">Listo para procesar pagos</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- DJ Tab -->
+    <div class="tab-content" id="tab-dj">
+      <div class="card">
+        <h2>🎵 Solicitar Canciones al DJ</h2>
+        <div class="form-group">
+          <label for="cancionInput">Nombre de la Canción *</label>
+          <input type="text" id="cancionInput" placeholder="Despacito" required>
+        </div>
+        <div class="form-group">
+          <label for="artistaInput">Artista (opcional)</label>
+          <input type="text" id="artistaInput" placeholder="Luis Fonsi">
+        </div>
+        <button class="submit-btn" onclick="solicitarCancion()" style="background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;">Enviar al DJ</button>
+        <div id="djContainer" style="margin-top: 20px;">
+          <p style="text-align: center; color: #6b7280;">Listo para enviar peticiones</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Importar Firebase - CORREGIDO: SIN ESPACIOS AL FINAL
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      getDocs, 
+      query, 
+      where,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Configuración
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
+      authDomain: "manager-pro-ec292.firebaseapp.com",
+      projectId: "manager-pro-ec292",
+      storageBucket: "manager-pro-ec292.firebasestorage.app",
+      messagingSenderId: "1077289364014",
+      appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Variables globales
+    let currentMesero = null;
+    let currentTenantId = null;
+    let currentMesaId = null;
+    let carrito = [];
+    let canciones = [];
+
+    // Extraer urlUnica de la URL (file:///cashier/andrees → "andrees")
+    function getUrlUnica() {
+      const path = window.location.pathname;
+      const parts = path.split('/');
+      return parts[parts.length - 1] || null;
+    }
+
+    // Buscar tenant y mesero
+    async function encontrarTenantYMesero(urlUnica) {
+      if (!urlUnica) {
+        throw new Error('URL inválida');
+      }
+
+      // Buscar en todos los tenants
+      const tenantsSnapshot = await getDocs(collection(db, 'tenants'));
+      
+      for (const tenantDoc of tenantsSnapshot.docs) {
+        const tenantId = tenantDoc.id;
+        const meserosRef = collection(db, `tenants/${tenantId}/meseros`);
+        const q = query(meserosRef, where('urlUnica', '==', urlUnica));
+        const meserosSnapshot = await getDocs(q);
+        
+        if (!meserosSnapshot.empty) {
+          const meseroDoc = meserosSnapshot.docs[0];
+          return {
+            tenantId: tenantId,
+            mesero: { id: meseroDoc.id, ...meseroDoc.data() }
+          };
+        }
+      }
+      
+      throw new Error('Mesero no encontrado');
+    }
+
+    // Cargar mesas del tenant
+    async function cargarMesas(tenantId) {
+      const mesasSnapshot = await getDocs(collection(db, `tenants/${tenantId}/mesas`));
+      const mesas = [];
+      mesasSnapshot.forEach(doc => {
+        mesas.push({ id: doc.id, ...doc.data() });
+      });
+      renderMesas(mesas);
+    }
+
+    // Cargar artículos del tenant
+    async function cargarArticulos(tenantId) {
+      const articulosSnapshot = await getDocs(collection(db, `tenants/${tenantId}/articulos`));
+      const articulos = [];
+      articulosSnapshot.forEach(doc => {
+        articulos.push({ id: doc.id, ...doc.data() });
+      });
+      renderMenu(articulos);
+    }
+
+    // Renderizar mesas por zona
+    function renderMesas(mesas) {
+      const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
+      let html = '';
+      
+      zonas.forEach(zona => {
+        const mesasZona = mesas.filter(m => m.ubicacion === zona);
+        if (mesasZona.length > 0) {
+          html += `<div class="zona-card"><div class="zona-title">${zona}</div>`;
+          mesasZona.forEach(mesa => {
+            html += `
+              <div class="mesa-item" onclick="window.seleccionarMesa('${mesa.id}', '${mesa.numero}')">
+                Mesa ${mesa.numero} • Cap: ${mesa.capacidad}
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+      });
+      
+      document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #6b7280;">No hay mesas disponibles</p>';
+    }
+
+    // Renderizar menú
+    function renderMenu(articulos) {
+      const categorias = [...new Set(articulos.map(a => a.categoria).filter(c => c))];
+      let html = '<div class="categorias-filtros">';
+      html += '<button class="categoria-btn active" onclick="window.filtrarCategoria(\'all\')">Todos</button>';
+      
+      categorias.forEach(cat => {
+        // Escapar comillas simples para evitar errores de sintaxis
+        const catSafe = cat.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        html += `<button class="categoria-btn" onclick="window.filtrarCategoria('${catSafe}')">${cat}</button>`;
+      });
+      
+      html += '</div>';
+      
+      html += '<div class="articulos-grid" id="articulosGrid">';
+      articulos.forEach(art => {
+        // Escapar comillas en nombres de artículos
+        const nombreSafe = art.nombre.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        html += `
+          <div class="articulo-card">
+            <div class="articulo-nombre">${art.nombre}</div>
+            <div class="articulo-precio">$${art.precio.toLocaleString()}</div>
+            <div class="articulo-stock">Stock: ${art.stock}</div>
+            <button class="agregar-btn" onclick="window.agregarAlCarrito('${art.id}', '${nombreSafe}', ${art.precio})">+</button>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      document.getElementById('menuContainer').innerHTML = html;
+    }
+
+    // Funciones expuestas en window
+    window.seleccionarMesa = function(mesaId, mesaNumero) {
+      currentMesaId = mesaId;
+      document.querySelectorAll('.mesa-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+      alert(`✅ Mesa ${mesaNumero} seleccionada`);
+    };
+
+    window.agregarAlCarrito = function(articuloId, nombre, precio) {
+      carrito.push({ id: articuloId, nombre: nombre, precio: precio, cantidad: 1 });
+      window.actualizarCarrito();
+    };
+
+    window.filtrarCategoria = function(categoria) {
+      document.querySelectorAll('.categoria-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    };
+
+    window.actualizarCarrito = function() {
+      if (carrito.length === 0) {
+        document.getElementById('carritoContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">Carrito vacío</p>';
+        return;
+      }
+      
+      let html = '<div class="carrito-items">';
+      let total = 0;
+      
+      carrito.forEach((item, index) => {
+        const subtotal = item.precio * item.cantidad;
+        total += subtotal;
+        html += `
+          <div class="carrito-item">
+            <span>${item.nombre} x${item.cantidad}</span>
+            <span>$${subtotal.toLocaleString()}</span>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      html += `<div class="carrito-total">Total: $${total.toLocaleString()}</div>`;
+      html += `<button class="crear-pedido-btn" onclick="window.crearPedido()">Crear Pedido</button>`;
+      
+      document.getElementById('carritoContainer').innerHTML = html;
+    };
+
+    window.crearPedido = async function() {
+      if (!currentMesaId) {
+        alert('⚠️ Por favor selecciona una mesa primero');
+        return;
+      }
+      if (carrito.length === 0) {
+        alert('⚠️ El carrito está vacío');
+        return;
+      }
+      
+      try {
+        const pedido = {
+          mesaId: currentMesaId,
+          meseroId: currentMesero.id,
+          meseroNombre: currentMesero.nombre,
+          items: carrito,
+          total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
+          estado: 'pendiente',
+          createdAt: serverTimestamp()
+        };
+        
+        await addDoc(collection(db, `tenants/${currentTenantId}/pedidos`), pedido);
+        carrito = [];
+        window.actualizarCarrito();
+        alert('✅ Pedido creado exitosamente');
+      } catch (error) {
+        alert('❌ Error al crear pedido: ' + error.message);
+      }
+    };
+
+    // Función para solicitar canción al DJ
+    window.solicitarCancion = async function() {
+      const cancionInput = document.getElementById('cancionInput');
+      const artistaInput = document.getElementById('artistaInput');
+      const cancion = cancionInput.value;
+      const artista = artistaInput.value;
+      
+      if (!currentMesaId || !cancion) {
+        alert('⚠️ Selecciona una mesa e ingresa el nombre de la canción');
+        return;
+      }
+      
+      try {
+        // Buscar mesa actual para obtener el número
+        const mesasSnapshot = await getDocs(collection(db, `tenants/${currentTenantId}/mesas`));
+        let mesaNumero = 'Desconocida';
+        mesasSnapshot.forEach(doc => {
+          if (doc.id === currentMesaId) {
+            mesaNumero = doc.data().numero;
+          }
+        });
+        
+        const peticion = {
+          mesa: mesaNumero,
+          cancion: cancion,
+          artista: artista || null,
+          mesero: currentMesero.nombre,
+          estado: 'pendiente',
+          createdAt: serverTimestamp()
+        };
+        
+        await addDoc(collection(db, `tenants/${currentTenantId}/peticionesCancion`), peticion);
+        cancionInput.value = '';
+        artistaInput.value = '';
+        alert('✅ Petición enviada al DJ');
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    };
+
+    // Inicialización
+    async function init() {
+      try {
+        const urlUnica = getUrlUnica();
+        document.getElementById('tenantInfo').textContent = `Buscando mesero: ${urlUnica}...`;
+        
+        const resultado = await encontrarTenantYMesero(urlUnica);
+        currentTenantId = resultado.tenantId;
+        currentMesero = resultado.mesero;
+        
+        // Actualizar UI
+        document.getElementById('meseroNombre').textContent = `Panel de ${currentMesero.nombre}`;
+        document.getElementById('tenantInfo').textContent = `Tenant: ${currentTenantId.substring(0, 8)}...`;
+        
+        // Cargar datos
+        await cargarMesas(currentTenantId);
+        await cargarArticulos(currentTenantId);
+        
+      } catch (error) {
+        document.getElementById('meseroNombre').textContent = '❌ Acceso Denegado';
+        document.getElementById('tenantInfo').textContent = error.message;
+        document.querySelector('.tabs').style.display = 'none';
+        document.getElementById('tab-mesas').innerHTML = '<div class="card"><p style="text-align: center; color: #ef4444; padding: 20px;">No se puede acceder al panel. URL inválida o mesero no activo.</p><button onclick="window.location.href=\'index.html\'" style="margin-top: 16px; background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Volver al Login</button></div>';
+      }
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('tab-' + this.getAttribute('data-tab')).classList.add('active');
+      });
+    });
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>
+

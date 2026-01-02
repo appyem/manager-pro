@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Bar - Sistema Integral</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); min-height: 100vh; padding: 16px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* Login */
+    .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); padding: 40px; width: 100%; max-width: 450px; text-align: center; }
+    .login-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px; font-weight: bold; }
+    .login-card h1 { font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+    .login-card p { color: #6b7280; margin-bottom: 24px; font-size: 16px; }
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px; }
+    .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #f97316; }
+    .login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s; margin-bottom: 12px; }
+    .login-btn:hover { transform: translateY(-2px); opacity: 0.95; }
+    .register-link { color: #3b82f6; text-decoration: underline; cursor: pointer; font-weight: 600; }
+    
+    /* Register Form */
+    .register-container { display: none; min-height: 100vh; padding: 20px; }
+    .register-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); padding: 40px; }
+    .register-header { text-align: center; margin-bottom: 30px; }
+    .register-header h1 { font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+    .register-header p { color: #6b7280; font-size: 16px; }
+    
+    /* Plans */
+    .plans-section { margin: 30px 0; }
+    .plans-header { text-align: center; margin-bottom: 24px; }
+    .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .plan-card { border: 2px solid #e5e7eb; border-radius: 16px; padding: 24px; text-align: center; transition: all 0.3s; }
+    .plan-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-color: #ea580c; }
+    .plan-popular { border-color: #ea580c; position: relative; }
+    .plan-popular::before { content: 'MÁS POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #ea580c; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .plan-name { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+    .plan-price { font-size: 28px; font-weight: 700; color: #ea580c; margin-bottom: 12px; }
+    .plan-duration { font-size: 14px; color: #6b7280; margin-bottom: 16px; }
+    .plan-features { list-style: none; margin-bottom: 20px; }
+    .plan-features li { padding: 4px 0; color: #4b5563; }
+    .plan-btn { width: 100%; padding: 12px; background: #ea580c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .plan-btn:hover { background: #c2410c; }
+    
+    /* WhatsApp Button */
+    .whatsapp-btn {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      transition: transform 0.2s;
+    }
+    .whatsapp-btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.95;
+    }
+    
+    /* Dashboard */
+    #dashboard { display: none; }
+    .header { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .tabs { display: flex; overflow-x: auto; padding: 8px 0; margin-bottom: 24px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .tab-btn { padding: 12px 24px; border: none; background: none; font-size: 16px; font-weight: 600; color: #6b7280; cursor: pointer; border-radius: 8px; white-space: nowrap; margin: 0 4px; }
+    .tab-btn.active { background: #ffedd5; color: #ea580c; }
+    .tab-btn:hover:not(.active) { background: #f9fafb; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .stat-card { background: white; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid; }
+    .stat-card.libre { border-color: #10b981; }
+    .stat-card.pendiente { border-color: #f59e0b; }
+    .stat-card.pagada { border-color: #3b82f6; }
+    .stat-card.total { border-color: #8b5cf6; }
+    .stat-label { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+    .stat-value.green { color: #10b981; }
+    .stat-value.yellow { color: #f59e0b; }
+    .stat-value.blue { color: #3b82f6; }
+    .stat-value.purple { color: #8b5cf6; }
+    
+    /* Tables */
+    .tables-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .table-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .table-number { font-size: 20px; font-weight: 700; color: #1f2937; }
+    .table-status { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .table-status.libre { background: #dcfce7; color: #166534; }
+    .table-status.pendiente { background: #fef3c7; color: #92400e; }
+    .table-status.pagada { background: #dbeafe; color: #1e40af; }
+    .table-location { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
+    .table-capacity { font-size: 14px; color: #6b7280; }
+    
+    /* Forms */
+    .form-section, .list-section { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .form-section h2, .list-section h2 { font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 24px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .submit-btn { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+    .submit-btn:hover { transform: translateY(-2px); }
+    
+    /* Lists */
+    .list-item { padding: 16px; border-bottom: 1px solid #f3f4f6; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .list-item-title { font-weight: 600; font-size: 16px; color: #1f2937; }
+    .list-item-detail { font-size: 14px; color: #6b7280; }
+    .action-buttons { display: flex; gap: 12px; margin-top: 12px; }
+    .action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .action-btn.copy { background: #f3f4f6; color: #4b5563; }
+    .action-btn.whatsapp { background: #10b981; color: white; }
+    
+    @media (max-width: 768px) {
+      .register-card { padding: 30px 20px; }
+      .plans-grid, .stats-grid, .tables-grid, .form-grid { grid-template-columns: 1fr; }
+      .tab-btn { padding: 10px 16px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Screen -->
+    <div id="login" class="login-container">
+      <div class="login-card">
+        <div class="login-icon">A</div>
+        <h1>Gestión de Bar</h1>
+        <p>Sistema Integral para Bares y Restaurantes</p>
+        
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="tu@bar.com" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="tu contraseña" required>
+        </div>
+        
+        <button class="login-btn" onclick="iniciarSesion()">🔐 Iniciar Sesión</button>
+        <p style="font-size: 14px; color: #6b7280;">
+          ¿No tienes cuenta? <span class="register-link" onclick="showRegister()">Solicita tu cuenta aquí</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register" class="register-container">
+      <div class="register-card">
+        <div class="register-header">
+          <h1>🚀 Solicita tu Cuenta</h1>
+          <p>Completa el formulario y elige tu plan de suscripción</p>
+        </div>
+        
+        <form id="registerForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fullName">Nombre Completo *</label>
+              <input type="text" id="fullName" placeholder="Juan Pérez" required>
+            </div>
+            <div class="form-group">
+              <label for="businessName">Nombre del Negocio *</label>
+              <input type="text" id="businessName" placeholder="Bar El Trago" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" placeholder="tu@bar.com" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Teléfono *</label>
+              <input type="tel" id="phone" placeholder="3106524453" required>
+            </div>
+          </div>
+          
+          <div class="plans-section">
+            <div class="plans-header">
+              <h2>📊 Elige tu Plan</h2>
+              <p>Todos los planes incluyen: Meseros ilimitados, Artículos ilimitados, Soporte 24/7</p>
+            </div>
+            
+            <div class="plans-grid">
+              <div class="plan-card">
+                <div class="plan-name">Prueba</div>
+                <div class="plan-price">$100.000</div>
+                <div class="plan-duration">15 días</div>
+                <ul class="plan-features">
+                  <li>✓ Meseros ilimitados</li>
+                  <li>✓ Artículos ilimitados</li>
+                  <li>✓ Soporte básico</li>
+                </ul>
+                <button type="button" class="plan-btn" onclick="selectPlan('Prueba - 15 días - $100.000')">Seleccionar</button>
+              </div>
+              
+              <div class="plan-card plan-popular">
+                <div class="plan-name">Estándar</div>
+                <div class="plan-price">$400.000</div>
+                <div class="plan-duration">3 meses</div>
+                <ul class="plan-features">
+                  <li>✓ Meseros ilimitados</li>
+                  <li>✓ Artículos ilimitados</li>
+                  <li>✓ Soporte prioritario</li>
+                  <li>✓ Reportes avanzados</li>
+                </ul>
+                <button type="button" class="plan-btn" onclick="selectPlan('Estándar - 3 meses - $400.000')">Seleccionar</button>
+              </div>
+              
+              <div class="plan-card">
+                <div class="plan-name">Profesional</div>
+                <div class="plan-price">$700.000</div>
+                <div class="plan-duration">6 meses</div>
+                <ul class="plan-features">
+                  <li>✓ Meseros ilimitados</li>
+                  <li>✓ Artículos ilimitados</li>
+                  <li>✓ Soporte 24/7</li>
+                  <li>✓ Reportes avanzados</li>
+                  <li>✓ Personalización</li>
+                </ul>
+                <button type="button" class="plan-btn" onclick="selectPlan('Profesional - 6 meses - $700.000')">Seleccionar</button>
+              </div>
+              
+              <div class="plan-card">
+                <div class="plan-name">Premium</div>
+                <div class="plan-price">$990.000</div>
+                <div class="plan-duration">1 año</div>
+                <ul class="plan-features">
+                  <li>✓ Meseros ilimitados</li>
+                  <li>✓ Artículos ilimitados</li>
+                  <li>✓ Soporte 24/7 VIP</li>
+                  <li>✓ Reportes avanzados</li>
+                  <li>✓ Personalización completa</li>
+                  <li>✓ Actualizaciones prioritarias</li>
+                </ul>
+                <button type="button" class="plan-btn" onclick="selectPlan('Premium - 1 año - $990.000')">Seleccionar</button>
+              </div>
+            </div>
+          </div>
+          
+          <input type="hidden" id="selectedPlan" required>
+          
+          <button type="button" class="whatsapp-btn" onclick="enviarWhatsApp()">
+            <span class="whatsapp-icon">💬</span>
+            Enviar Solicitud por WhatsApp
+          </button>
+          
+          <button type="button" style="margin-top: 15px; background: none; border: none; color: #6b7280; cursor: pointer;" onclick="showLogin()">
+            ← Volver al Login
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+      <div class="header">
+        <div>
+          <h1 id="barName">Panel de Administrador</h1>
+          <p id="tenantInfo" style="font-size: 12px; opacity: 0.9;">Negocio: <span id="tenantIdDisplay"></span></p>
+        </div>
+        <button class="logout-btn" onclick="cerrarSesion()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Cerrar Sesión</button>
+      </div>
+      
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('dashboard')">📊 Dashboard</button>
+        <button class="tab-btn" onclick="showTab('meseros')">👥 Meseros</button>
+        <button class="tab-btn" onclick="showTab('mesas')">🪑 Mesas</button>
+        <button class="tab-btn" onclick="showTab('articulos')">🍷 Artículos</button>
+        <button class="tab-btn" onclick="showTab('reportes')">📈 Reportes</button>
+      </div>
+      
+      <!-- Dashboard Tab -->
+      <div class="tab-content active" id="tab-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card libre">
+            <div class="stat-label">Mesas Libres</div>
+            <div class="stat-value green" id="mesasLibres">0</div>
+          </div>
+          <div class="stat-card pendiente">
+            <div class="stat-label">Pendientes</div>
+            <div class="stat-value yellow" id="mesasPendientes">0</div>
+          </div>
+          <div class="stat-card pagada">
+            <div class="stat-label">Pagadas</div>
+            <div class="stat-value blue" id="mesasPagadas">0</div>
+          </div>
+          <div class="stat-card total">
+            <div class="stat-label">Total Pendiente</div>
+            <div class="stat-value purple" id="totalPendiente">$0</div>
+          </div>
+        </div>
+        
+        <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 20px;">Estado de Mesas</h2>
+        <div class="tables-grid" id="tablesContainer">
+          <!-- Mesas se cargarán aquí -->
+        </div>
+      </div>
+      
+      <!-- Meseros Tab -->
+      <div class="tab-content" id="tab-meseros">
+        <div class="form-section">
+          <h2>Crear Nuevo Mesero</h2>
+          <form class="form-grid" onsubmit="crearMesero(event)">
+            <div class="form-group">
+              <label for="nombreMesero">Nombre</label>
+              <input type="text" id="nombreMesero" placeholder="Nombre del mesero" required>
+            </div>
+            <div class="form-group">
+              <label for="telefonoMesero">Teléfono</label>
+              <input type="tel" id="telefonoMesero" placeholder="3001234567" required>
+            </div>
+            <div class="form-group full">
+              <button type="submit" class="submit-btn">Crear Mesero</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="list-section">
+          <h2>Meseros (<span id="meserosCount">0</span>)</h2>
+          <div id="meserosList">
+            <!-- Lista de meseros -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mesas Tab -->
+      <div class="tab-content" id="tab-mesas">
+        <div class="form-section">
+          <h2>Crear Nueva Mesa</h2>
+          <form class="form-grid" onsubmit="crearMesa(event)">
+            <div class="form-group">
+              <label for="numeroMesa">Número</label>
+              <input type="text" id="numeroMesa" placeholder="1, 2, A, B..." required>
+            </div>
+            <div class="form-group">
+              <label for="ubicacionMesa">Ubicación</label>
+              <select id="ubicacionMesa" required>
+                <option value="">Seleccionar ubicación</option>
+                <option value="Zona VIP">Zona VIP</option>
+                <option value="Pista de Baile">Pista de Baile</option>
+                <option value="Terraza">Terraza</option>
+                <option value="Bar Principal">Bar Principal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="capacidadMesa">Capacidad</label>
+              <input type="number" id="capacidadMesa" min="1" value="4" required>
+            </div>
+            <div class="form-group full">
+              <button type="submit" class="submit-btn">Crear Mesa</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="list-section">
+          <h2>Mesas (<span id="mesasCount">0</span>)</h2>
+          <div id="mesasList">
+            <!-- Lista de mesas -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Artículos Tab -->
+      <div class="tab-content" id="tab-articulos">
+        <div class="form-section">
+          <h2>Crear Nuevo Artículo</h2>
+          <form class="form-grid" onsubmit="crearArticulo(event)">
+            <div class="form-group">
+              <label for="nombreArticulo">Nombre</label>
+              <input type="text" id="nombreArticulo" placeholder="Aguardiente Antioqueño" required>
+            </div>
+            <div class="form-group">
+              <label for="categoriaArticulo">Categoría</label>
+              <select id="categoriaArticulo" required>
+                <option value="">Seleccionar categoría</option>
+                <option value="Aguardiente">Aguardiente</option>
+                <option value="Ron">Ron</option>
+                <option value="Whisky">Whisky</option>
+                <option value="Vodka">Vodka</option>
+                <option value="Cerveza">Cerveza</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="precioArticulo">Precio ($)</label>
+              <input type="number" id="precioArticulo" min="1" placeholder="25000" required>
+            </div>
+            <div class="form-group">
+              <label for="stockArticulo">Stock Inicial</label>
+              <input type="number" id="stockArticulo" min="1" value="24" required>
+            </div>
+            <div class="form-group full">
+              <button type="submit" class="submit-btn">Crear Artículo</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="list-section">
+          <h2>Artículos (<span id="articulosCount">0</span>)</h2>
+          <div id="articulosList">
+            <!-- Lista de artículos -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Reportes Tab -->
+      <div class="tab-content" id="tab-reportes">
+        <div class="stats-grid">
+          <div class="stat-card total">
+            <div class="stat-label">Ventas Totales</div>
+            <div class="stat-value purple" id="ventasTotales">$0</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Pedidos Totales</div>
+            <div class="stat-value blue" id="pedidosTotales">0</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Pedidos Pagados</div>
+            <div class="stat-value green" id="pedidosPagados">0</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-label">Pedidos Pendientes</div>
+            <div class="stat-value yellow" id="pedidosPendientes">0</div>
+          </div>
+        </div>
+        
+        <div class="list-section">
+          <h2>Historia de Transacciones</h2>
+          <div id="transaccionesList">
+            <p style="text-align: center; color: #6b7280; padding: 20px;">No hay transacciones</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Importar Firebase - CORREGIDO: SIN ESPACIOS AL FINAL
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      setDoc, 
+      getDocs, 
+      addDoc,
+      deleteDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Configuración
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
+      authDomain: "manager-pro-ec292.firebaseapp.com",
+      projectId: "manager-pro-ec292",
+      storageBucket: "manager-pro-ec292.firebasestorage.app",
+      messagingSenderId: "1077289364014",
+      appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Variables
+    let currentUser = null;
+    let tenantId = null;
+
+    // Función para crear tenant
+    async function crearTenant(userId, email) {
+      const tenantRef = doc(db, 'tenants', userId);
+      await setDoc(tenantRef, {
+        name: `Bar de ${email.split('@')[0]}`,
+        email: email,
+        owner: userId,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    // Login
+    window.iniciarSesion = async function() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!email || !password) {
+        alert('⚠️ Por favor ingresa email y contraseña');
+        return;
+      }
+      
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        currentUser = userCredential.user;
+        tenantId = userCredential.user.uid;
+        document.getElementById('barName').textContent = `Panel de ${email}`;
+        document.getElementById('tenantIdDisplay').textContent = tenantId.substring(0, 8) + '...';
+        showDashboard();
+        cargarDatos();
+      } catch (error) {
+        alert('❌ Credenciales incorrectas o cuenta no activada.\n\nContacta al soporte para activar tu cuenta.');
+      }
+    };
+
+    // Registro (WhatsApp) - CORREGIDO: SIN ESPACIO EN URL
+    window.showRegister = function() {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('register').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
+    };
+
+    window.showLogin = function() {
+      document.getElementById('login').style.display = 'block';
+      document.getElementById('register').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'none';
+    };
+
+    window.selectPlan = function(plan) {
+      document.getElementById('selectedPlan').value = plan;
+      document.querySelectorAll('.plan-btn').forEach(btn => {
+        btn.style.background = '#ea580c';
+      });
+      event.target.style.background = '#c2410c';
+    };
+
+    window.enviarWhatsApp = function() {
+      const fullName = document.getElementById('fullName').value;
+      const businessName = document.getElementById('businessName').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const selectedPlan = document.getElementById('selectedPlan').value;
+      
+      if (!fullName || !businessName || !email || !phone || !selectedPlan) {
+        alert('⚠️ Por favor completa todos los campos y selecciona un plan');
+        return;
+      }
+      
+      const mensaje = `¡Hola! Quisiera solicitar una cuenta para el sistema de gestión de bares.\n\n` +
+                     `📋 Datos del solicitante:\n` +
+                     `• Nombre: ${fullName}\n` +
+                     `• Negocio: ${businessName}\n` +
+                     `• Email: ${email}\n` +
+                     `• Teléfono: ${phone}\n\n` +
+                     `💰 Plan seleccionado:\n` +
+                     `• ${selectedPlan}\n\n` +
+                     `¿Podrían ayudarme con el proceso de activación? ¡Gracias!`;
+      
+      // CORREGIDO: SIN ESPACIO EN URL
+      const whatsappUrl = `https://wa.me/573106524453?text=${encodeURIComponent(mensaje)}`;
+      window.location.href = whatsappUrl;
+    };
+
+    // Cerrar sesión
+    window.cerrarSesion = async function() {
+      await signOut(auth);
+      currentUser = null;
+      tenantId = null;
+      showLogin();
+    };
+
+    // Navegación del panel
+    window.showDashboard = function() {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('register').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+    };
+
+    window.showTab = function(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      event.target.classList.add('active');
+    };
+
+    // Funciones de datos
+    async function cargarDatos() {
+      if (!tenantId) return;
+      
+      // Cargar mesas
+      const mesasSnapshot = await getDocs(collection(db, `tenants/${tenantId}/mesas`));
+      const mesas = [];
+      mesasSnapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
+      renderMesas(mesas);
+      
+      // Cargar meseros  
+      const meserosSnapshot = await getDocs(collection(db, `tenants/${tenantId}/meseros`));
+      const meseros = [];
+      meserosSnapshot.forEach(doc => meseros.push({ id: doc.id, ...doc.data() }));
+      renderMeseros(meseros);
+      
+      // Cargar artículos
+      const articulosSnapshot = await getDocs(collection(db, `tenants/${tenantId}/articulos`));
+      const articulos = [];
+      articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
+      renderArticulos(articulos);
+      
+      // Actualizar dashboard
+      actualizarDashboard(mesas);
+    }
+
+    async function crearMeseroFirebase(nombre, telefono) {
+      if (!tenantId) return;
+      const urlUnica = nombre.toLowerCase().replace(/\s+/g, '-');
+      await addDoc(collection(db, `tenants/${tenantId}/meseros`), {
+        nombre, telefono, urlUnica, createdAt: serverTimestamp()
+      });
+      cargarDatos();
+    }
+
+    // Eliminar Mesero
+    async function eliminarMesero(id) {
+      if (!tenantId || !confirm('¿Estás seguro de eliminar este mesero?')) return;
+      try {
+        const meseroRef = doc(db, `tenants/${tenantId}/meseros`, id);
+        await deleteDoc(meseroRef);
+        cargarDatos();
+        alert('✅ Mesero eliminado exitosamente');
+      } catch (error) {
+        alert('❌ Error al eliminar mesero: ' + error.message);
+      }
+    }
+
+    async function crearMesaFirebase(numero, ubicacion, capacidad) {
+      if (!tenantId) return;
+      await addDoc(collection(db, `tenants/${tenantId}/mesas`), {
+        numero, ubicacion, capacidad: parseInt(capacidad), estado: 'libre', createdAt: serverTimestamp()
+      });
+      cargarDatos();
+    }
+
+    // Eliminar Mesa
+    async function eliminarMesa(id) {
+      if (!tenantId || !confirm('¿Estás seguro de eliminar esta mesa?')) return;
+      try {
+        const mesaRef = doc(db, `tenants/${tenantId}/mesas`, id);
+        await deleteDoc(mesaRef);
+        cargarDatos();
+        alert('✅ Mesa eliminada exitosamente');
+      } catch (error) {
+        alert('❌ Error al eliminar mesa: ' + error.message);
+      }
+    }
+
+    async function crearArticuloFirebase(nombre, categoria, precio, stock) {
+      if (!tenantId) return;
+      await addDoc(collection(db, `tenants/${tenantId}/articulos`), {
+        nombre, categoria, precio: parseFloat(precio), stock: parseInt(stock), createdAt: serverTimestamp()
+      });
+      cargarDatos();
+    }
+
+    // Renderizado
+    function actualizarDashboard(mesas) {
+      const libre = mesas.filter(m => m.estado === 'libre').length;
+      const pendiente = mesas.filter(m => m.estado === 'pendiente').length;
+      const pagada = mesas.filter(m => m.estado === 'pagada').length;
+      const totalPendiente = pendiente * 25000;
+      
+      document.getElementById('mesasLibres').textContent = libre;
+      document.getElementById('mesasPendientes').textContent = pendiente;
+      document.getElementById('mesasPagadas').textContent = pagada;
+      document.getElementById('totalPendiente').textContent = '$' + totalPendiente.toLocaleString();
+      
+      const container = document.getElementById('tablesContainer');
+      container.innerHTML = '';
+      
+      mesas.forEach(mesa => {
+        const card = document.createElement('div');
+        card.className = 'table-card';
+        card.innerHTML = `
+          <div class="table-header">
+            <div class="table-number">Mesa ${mesa.numero}</div>
+            <div class="table-status ${mesa.estado || 'libre'}">${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? 'Pendiente' : 'Pagada'}</div>
+          </div>
+          <div class="table-location">${mesa.ubicacion || 'Sin ubicación'}</div>
+          <div class="table-capacity">Capacidad: ${mesa.capacidad || 4} personas</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderMeseros(meseros) {
+      document.getElementById('meserosCount').textContent = meseros.length;
+      const container = document.getElementById('meserosList');
+      container.innerHTML = '';
+      meseros.forEach(mesero => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="list-item-header">
+            <div class="list-item-title">${mesero.nombre}</div>
+          </div>
+          <div class="list-item-detail">Tel: ${mesero.telefono}</div>
+          <div class="list-item-detail">URL: /cashier/${mesero.urlUnica}</div>
+          <div class="action-buttons">
+            <button class="action-btn copy" onclick="copiarURL('${mesero.urlUnica}')">Copiar URL</button>
+            <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.urlUnica}')">WhatsApp</button>
+            <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesero('${mesero.id}')">Eliminar</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderMesas(mesas) {
+      document.getElementById('mesasCount').textContent = mesas.length;
+      const container = document.getElementById('mesasList');
+      container.innerHTML = '';
+      mesas.forEach(mesa => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="list-item-header">
+            <div class="list-item-title">Mesa ${mesa.numero}</div>
+          </div>
+          <div class="list-item-detail">Ubicación: ${mesa.ubicacion}</div>
+          <div class="list-item-detail">Capacidad: ${mesa.capacidad} personas</div>
+          <div class="action-buttons" style="margin-top: 10px;">
+            <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesa('${mesa.id}')">Eliminar</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderArticulos(articulos) {
+      document.getElementById('articulosCount').textContent = articulos.length;
+      const container = document.getElementById('articulosList');
+      container.innerHTML = '';
+      articulos.forEach(articulo => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="list-item-header">
+            <div class="list-item-title">${articulo.nombre}</div>
+          </div>
+          <div class="list-item-detail">Categoría: ${articulo.categoria || 'Sin categoría'}</div>
+          <div class="list-item-detail">Precio: $${(articulo.precio || 0).toLocaleString()}</div>
+          <div class="list-item-detail">Stock: ${articulo.stock || 0}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // CRUD funciones
+    window.crearMesero = async function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombreMesero').value;
+      const telefono = document.getElementById('telefonoMesero').value;
+      if (nombre && telefono) {
+        await crearMeseroFirebase(nombre, telefono);
+        document.getElementById('nombreMesero').value = '';
+        document.getElementById('telefonoMesero').value = '';
+      }
+    };
+
+    window.crearMesa = async function(e) {
+      e.preventDefault();
+      const numero = document.getElementById('numeroMesa').value;
+      const ubicacion = document.getElementById('ubicacionMesa').value;
+      const capacidad = document.getElementById('capacidadMesa').value;
+      if (numero && ubicacion && capacidad) {
+        await crearMesaFirebase(numero, ubicacion, capacidad);
+        document.getElementById('numeroMesa').value = '';
+        document.getElementById('ubicacionMesa').value = '';
+        document.getElementById('capacidadMesa').value = '4';
+      }
+    };
+
+    window.crearArticulo = async function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombreArticulo').value;
+      const categoria = document.getElementById('categoriaArticulo').value;
+      const precio = document.getElementById('precioArticulo').value;
+      const stock = document.getElementById('stockArticulo').value;
+      if (nombre && categoria && precio && stock) {
+        await crearArticuloFirebase(nombre, categoria, precio, stock);
+        document.getElementById('nombreArticulo').value = '';
+        document.getElementById('categoriaArticulo').value = '';
+        document.getElementById('precioArticulo').value = '';
+        document.getElementById('stockArticulo').value = '24';
+      }
+    };
+
+    // Utilidades
+    window.copiarURL = function(urlUnica) {
+      const url = window.location.origin + '/cashier/' + urlUnica;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('✅ URL copiada!');
+      });
+    };
+
+    window.enviarWhatsAppMesero = function(nombre, telefono, urlUnica) {
+      const url = window.location.origin + '/cashier/' + urlUnica;
+      const mensaje = `Hola ${nombre}, accede aquí: ${url}`;
+      // CORREGIDO: SIN ESPACIO EN URL
+      window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    };
+  </script>
+</body>
+</html>
+
