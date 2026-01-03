@@ -195,10 +195,21 @@
 
     // Extraer urlUnica de la URL (file:///cashier/andrees → "andrees")
     function getUrlUnica() {
-      const path = window.location.pathname;
-      const parts = path.split('/');
-      let urlUnica = parts[parts.length - 1] || null;
+      // Intentar primero con la URL original (antes de redirect de Netlify)
+      let urlUnica = null;
       
+      // Método 1: Buscar en la URL completa
+      const match = window.location.pathname.match(/\/cashier\/([^\/]+)/);
+      if (match && match[1]) {
+        urlUnica = match[1];
+      }
+      
+      // Método 2: Si no hay match, buscar en localStorage
+      if (!urlUnica) {
+        urlUnica = localStorage.getItem('mesero_url_unica');
+      }
+      
+      // Normalizar la URL
       if (urlUnica) {
         urlUnica = urlUnica
           .toLowerCase()

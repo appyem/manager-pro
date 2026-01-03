@@ -812,10 +812,12 @@
 
     // Utilidades
     window.copiarURL = function(urlUnica) {
-      const url = window.location.origin + '/cashier/' + urlUnica;
-      navigator.clipboard.writeText(url).then(() => {
+    // Guardar en localStorage para persistencia
+    localStorage.setItem('mesero_url_unica', urlUnica);
+    const url = window.location.origin + '/cashier/' + urlUnica;
+    navigator.clipboard.writeText(url).then(() => {
         alert('✅ URL copiada!');
-      });
+    });
     };
 
     window.enviarWhatsAppMesero = function(nombre, telefono, urlUnica) {
