@@ -195,8 +195,29 @@
 
     // Extraer urlUnica de la URL (file:///cashier/andrees → "andrees")
     function getUrlUnica() {
+      // Método 1: Intentar con parámetro de URL (más confiable)
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('mesero');
+      let urlUnica = urlParams.get('mesero');
+      
+      // Método 2: Si no hay parámetro, intentar con la ruta
+      if (!urlUnica) {
+        const path = window.location.pathname;
+        const parts = path.split('/');
+        urlUnica = parts[parts.length - 1] || null;
+      }
+      
+      // Normalización
+      if (urlUnica) {
+        urlUnica = urlUnica
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9-]/g, '')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+      
+      return urlUnica;
     }
 
     // Buscar tenant y mesero
