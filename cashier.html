@@ -195,29 +195,44 @@
 
     // Extraer urlUnica de la URL (file:///cashier/andrees → "andrees")
     function getUrlUnica() {
-      // Método 1: Intentar con parámetro de URL (más confiable)
-      const urlParams = new URLSearchParams(window.location.search);
-      let urlUnica = urlParams.get('mesero');
+      // Extraer de la URL original usando el historial
+      const originalPath = window.location.pathname;
       
-      // Método 2: Si no hay parámetro, intentar con la ruta
-      if (!urlUnica) {
-        const path = window.location.pathname;
-        const parts = path.split('/');
-        urlUnica = parts[parts.length - 1] || null;
+      // Buscar el último segmento que no sea 'cashier.html'
+      const parts = originalPath.split('/');
+      for (let i = parts.length - 1; i >= 0; i--) {
+        if (parts[i] && parts[i] !== 'cashier.html') {
+          let urlUnica = parts[i];
+          // Aplicar la misma normalización que en el admin
+          urlUnica = urlUnica
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+          return urlUnica;
+        }
       }
       
-      // Normalización
-      if (urlUnica) {
-        urlUnica = urlUnica
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9-]/g, '')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '');
+      // Si no se encuentra, intentar con referer
+      const referer = document.referrer;
+      if (referer.includes('/cashier/')) {
+        const match = referer.match(/\/cashier\/([^\/?#]+)/);
+        if (match) {
+          let urlUnica = match[1];
+          urlUnica = urlUnica
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+          return urlUnica;
+        }
       }
       
-      return urlUnica;
+      return null;
     }
 
     // Buscar tenant y mesero
@@ -443,6 +458,21 @@
 
     // Inicialización
     async function init() {
+
+      let initAttempted = false;
+
+      async function init() {
+        if (initAttempted) {
+          return; // Evitar segunda ejecución
+        }
+        initAttempted = true;
+        
+        try {
+          // ... resto de tu código existente ...
+        } catch (error) {
+          // ... manejo de error existente ...
+        }
+      }
       try {
         const urlUnica = getUrlUnica();
         document.getElementById('tenantInfo').textContent = `Buscando mesero: ${urlUnica}...`;
