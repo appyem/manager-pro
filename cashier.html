@@ -197,7 +197,20 @@
     function getUrlUnica() {
       const path = window.location.pathname;
       const parts = path.split('/');
-      return parts[parts.length - 1] || null;
+      let urlUnica = parts[parts.length - 1] || null;
+      
+      if (urlUnica) {
+        // Aplicar LA MISMA normalización que en el admin
+        urlUnica = urlUnica
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9-]/g, '')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+      
+      return urlUnica;
     }
 
     // Buscar tenant y mesero

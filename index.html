@@ -613,13 +613,26 @@
       actualizarDashboard(mesas);
     }
 
-    async function crearMeseroFirebase(nombre, telefono) {
-      if (!tenantId) return;
-      const urlUnica = nombre.toLowerCase().replace(/\s+/g, '-');
-      await addDoc(collection(db, `tenants/${tenantId}/meseros`), {
-        nombre, telefono, urlUnica, createdAt: serverTimestamp()
-      });
-      cargarDatos();
+     async function crearMeseroFirebase(nombre, telefono) {
+  if (!tenantId) return;
+  
+    // Normalización robusta: tildes → letras, espacios → guiones, minúsculas
+    const urlUnica = nombre
+        .toLowerCase()
+        .normalize('NFD')                  // Descompone tildes: 'á' → 'a' + '´'
+        .replace(/[\u0300-\u036f]/g, '')   // Elimina marcas de acento
+        .replace(/[^a-z0-9\s]/g, '')       // Elimina caracteres especiales
+        .replace(/\s+/g, '-')              // Reemplaza espacios por guiones
+        .replace(/-+/g, '-')               // Evita guiones múltiples
+        .replace(/^-|-$/g, '');            // Elimina guiones al inicio/final
+    
+    await addDoc(collection(db, `tenants/${tenantId}/meseros`), {
+        nombre,
+        telefono,
+        urlUnica,
+        createdAt: serverTimestamp()
+    });
+    cargarDatos();
     }
 
     // Eliminar Mesero
