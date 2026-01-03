@@ -812,11 +812,9 @@
 
     // Utilidades
     window.copiarURL = function(urlUnica) {
-    // Guardar en localStorage para persistencia
-    localStorage.setItem('mesero_url_unica', urlUnica);
-    const url = window.location.origin + '/cashier/' + urlUnica;
+    const url = `${window.location.origin}/cashier.html?mesero=${urlUnica}`;
     navigator.clipboard.writeText(url).then(() => {
-        alert('✅ URL copiada!');
+        alert('✅ URL copiada!\n' + url);
     });
     };
 
