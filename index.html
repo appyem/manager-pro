@@ -698,8 +698,8 @@
           <div class="list-item-detail">Tel: ${mesero.telefono}</div>
           <div class="list-item-detail">ID: ${mesero.id}</div>
           <div class="action-buttons">
-            <button class="action-btn copy" onclick="copiarURL('${mesero.id}')">Copiar URL</button>
-            <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.id}')">WhatsApp</button>
+            <button class="action-btn copy" onclick="copiarURL('${mesero.id}', '${mesero.nombre}', '${tenantId}')">Copiar URL</button>
+            <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.id}', '${tenantId}')">WhatsApp</button>
             <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesero('${mesero.id}')">Eliminar</button>
           </div>
         `;
@@ -787,17 +787,27 @@
     };
 
     // ✅ UTILIDADES CORREGIDAS: ahora están en scope global
-    window.copiarURL = function(meseroId) {
-      const url = `${window.location.origin}/cashier.html?mid=${meseroId}`;
+    window.copiarURL = function(meseroId, meseroNombre, tenantId) {
+      // Codificar los datos en la URL
+      const datos = btoa(JSON.stringify({
+        meseroId,
+        meseroNombre,
+        tenantId
+      }));
+      const url = `${window.location.origin}/cashier.html?data=${encodeURIComponent(datos)}`;
       navigator.clipboard.writeText(url).then(() => {
         alert('✅ URL copiada!\n' + url);
       });
     };
 
-    window.enviarWhatsAppMesero = function(nombre, telefono, meseroId) {
-      const url = `${window.location.origin}/cashier.html?mid=${meseroId}`;
+    window.enviarWhatsAppMesero = function(nombre, telefono, meseroId, tenantId) {
+      const datos = btoa(JSON.stringify({
+        meseroId,
+        meseroNombre: nombre,
+        tenantId
+      }));
+      const url = `${window.location.origin}/cashier.html?data=${encodeURIComponent(datos)}`;
       const mensaje = `Hola ${nombre}, accede aquí: ${url}`;
-      // ✅ URL CORREGIDA: sin espacios
       window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
   </script>
