@@ -86,11 +86,43 @@
         </div>
       </div>
     </div>
-    <!-- Resto de tabs (sin cambios) -->
-    <div class="tab-content" id="tab-menu"><div class="card"><h2>🍎 Menú de Bebidas</h2><div id="menuContainer"><p style="text-align: center; color: #6b7280;">Cargando menú...</p></div></div></div>
-    <div class="tab-content" id="tab-carrito"><div class="card"><h2>🛒 Carrito de Pedidos</h2><div id="carritoContainer"><p style="text-align: center; color: #6b7280;">Carrito vacío</p></div></div></div>
-    <div class="tab-content" id="tab-pedidos"><div class="card"><h2>📋 Pedidos Activos</h2><div id="pedidosContainer"><p style="text-align: center; color: #6b7280;">No hay pedidos activos</p></div></div></div>
-    <div class="tab-content" id="tab-pagos"><div class="card"><h2>💰 Registro de Pagos</h2><div id="pagosContainer"><p style="text-align: center; color: #6b7280;">Listo para procesar pagos</p></div></div></div>
+    <!-- Menú Tab -->
+    <div class="tab-content" id="tab-menu">
+      <div class="card">
+        <h2>🍎 Menú de Bebidas</h2>
+        <div id="menuContainer">
+          <p style="text-align: center; color: #6b7280;">Cargando menú...</p>
+        </div>
+      </div>
+    </div>
+    <!-- Carrito Tab -->
+    <div class="tab-content" id="tab-carrito">
+      <div class="card">
+        <h2>🛒 Carrito de Pedidos</h2>
+        <div id="carritoContainer">
+          <p style="text-align: center; color: #6b7280;">Carrito vacío</p>
+        </div>
+      </div>
+    </div>
+    <!-- Pedidos Tab -->
+    <div class="tab-content" id="tab-pedidos">
+      <div class="card">
+        <h2>📋 Pedidos Activos</h2>
+        <div id="pedidosContainer">
+          <p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>
+        </div>
+      </div>
+    </div>
+    <!-- Pagos Tab -->
+    <div class="tab-content" id="tab-pagos">
+      <div class="card">
+        <h2>💰 Registro de Pagos</h2>
+        <div id="pagosContainer">
+          <p style="text-align: center; color: #6b7280;">Listo para procesar pagos</p>
+        </div>
+      </div>
+    </div>
+    <!-- DJ Tab -->
     <div class="tab-content" id="tab-dj">
       <div class="card">
         <h2>🎵 Solicitar Canciones al DJ</h2>
@@ -103,12 +135,14 @@
           <input type="text" id="artistaInput" placeholder="Luis Fonsi">
         </div>
         <button class="submit-btn" onclick="solicitarCancion()" style="background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;">Enviar al DJ</button>
-        <div id="djContainer" style="margin-top: 20px;"><p style="text-align: center; color: #6b7280;">Listo para enviar peticiones</p></div>
+        <div id="djContainer" style="margin-top: 20px;">
+          <p style="text-align: center; color: #6b7280;">Listo para enviar peticiones</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase SDK (NO como módulo) -->
+  <!-- Firebase SDK (modo compat - sin módulos) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -145,7 +179,7 @@
       for (const tenantDoc of tenantsSnapshot.docs) {
         const tenantId = tenantDoc.id;
         const meseroDoc = await db.collection(`tenants/${tenantId}/meseros`).doc(meseroId).get();
-        if (meseroDoc.exists) {
+        if (meseroDoc.exists()) {
           return {
             tenantId: tenantId,
             mesero: { id: meseroDoc.id, ...meseroDoc.data() }
@@ -155,13 +189,14 @@
       throw new Error('Mesero no encontrado');
     }
 
-    // Cargar mesas, artículos, etc. (sin cambios)
+    // Cargar mesas y artículos
     async function cargarMesas(tenantId) {
       const mesasSnapshot = await db.collection(`tenants/${tenantId}/mesas`).get();
       const mesas = [];
       mesasSnapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
       renderMesas(mesas);
     }
+
     async function cargarArticulos(tenantId) {
       const articulosSnapshot = await db.collection(`tenants/${tenantId}/articulos`).get();
       const articulos = [];
@@ -169,7 +204,7 @@
       renderMenu(articulos);
     }
 
-    // Funciones de render y lógica (sin cambios en esta parte)
+    // Renderizado
     function renderMesas(mesas) {
       const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
       let html = '';
@@ -185,6 +220,7 @@
       });
       document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #6b7280;">No hay mesas disponibles</p>';
     }
+
     function renderMenu(articulos) {
       const categorias = [...new Set(articulos.map(a => a.categoria).filter(c => c))];
       let html = '<div class="categorias-filtros"><button class="categoria-btn active" onclick="filtrarCategoria(\'all\')">Todos</button>';
@@ -199,21 +235,24 @@
       document.getElementById('menuContainer').innerHTML = html;
     }
 
-    // Funciones globales (expuestas en window implícitamente)
+    // Funciones globales
     function seleccionarMesa(mesaId, mesaNumero) {
       currentMesaId = mesaId;
       document.querySelectorAll('.mesa-item').forEach(item => item.classList.remove('selected'));
       event.target.classList.add('selected');
       alert(`✅ Mesa ${mesaNumero} seleccionada`);
     }
+
     function agregarAlCarrito(articuloId, nombre, precio) {
       carrito.push({ id: articuloId, nombre, precio, cantidad: 1 });
       actualizarCarrito();
     }
+
     function filtrarCategoria(categoria) {
       document.querySelectorAll('.categoria-btn').forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
     }
+
     function actualizarCarrito() {
       if (carrito.length === 0) {
         document.getElementById('carritoContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">Carrito vacío</p>';
@@ -230,6 +269,7 @@
       html += `<button class="crear-pedido-btn" onclick="crearPedido()">Crear Pedido</button>`;
       document.getElementById('carritoContainer').innerHTML = html;
     }
+
     async function crearPedido() {
       if (!currentMesaId || carrito.length === 0) return alert('⚠️ Selecciona mesa y agrega artículos');
       try {
@@ -250,6 +290,7 @@
         alert('❌ Error al crear pedido: ' + error.message);
       }
     }
+
     async function solicitarCancion() {
       const cancion = document.getElementById('cancionInput').value;
       const artista = document.getElementById('artistaInput').value;
@@ -275,7 +316,7 @@
       }
     }
 
-    // ✅ Inicialización CORRECTA (DOM listo + sin módulo)
+    // ✅ Inicialización segura
     async function init() {
       try {
         const meseroId = getMeseroId();
@@ -301,8 +342,9 @@
       }
     }
 
-    // Tabs (sin cambios)
+    // Inicializar cuando el DOM esté listo
     document.addEventListener('DOMContentLoaded', () => {
+      // Configurar tabs
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -311,7 +353,7 @@
           document.getElementById('tab-' + this.getAttribute('data-tab')).classList.add('active');
         });
       });
-      // ✅ Iniciar SOLO cuando el DOM esté listo
+      // Iniciar aplicación
       init();
     });
   </script>

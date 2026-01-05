@@ -443,29 +443,13 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    // Importar Firebase - CORREGIDO: SIN ESPACIOS AL FINAL
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { 
-      getFirestore, 
-      collection, 
-      doc, 
-      setDoc, 
-      getDocs, 
-      addDoc,
-      deleteDoc,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <!-- Firebase SDK (modo compat - NO usar type="module") -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-    // Configuración
+  <script>
+    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
       authDomain: "manager-pro-ec292.firebaseapp.com",
@@ -475,9 +459,9 @@
       appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
     // Variables
     let currentUser = null;
@@ -485,12 +469,12 @@
 
     // Función para crear tenant
     async function crearTenant(userId, email) {
-      const tenantRef = doc(db, 'tenants', userId);
-      await setDoc(tenantRef, {
+      const tenantRef = db.collection('tenants').doc(userId);
+      await tenantRef.set({
         name: `Bar de ${email.split('@')[0]}`,
         email: email,
         owner: userId,
-        createdAt: serverTimestamp()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
 
@@ -505,7 +489,7 @@
       }
       
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
         currentUser = userCredential.user;
         tenantId = userCredential.user.uid;
         document.getElementById('barName').textContent = `Panel de ${email}`;
@@ -517,7 +501,6 @@
       }
     };
 
-    // Registro (WhatsApp) - CORREGIDO: SIN ESPACIO EN URL
     window.showRegister = function() {
       document.getElementById('login').style.display = 'none';
       document.getElementById('register').style.display = 'block';
@@ -560,20 +543,18 @@
                      `• ${selectedPlan}\n\n` +
                      `¿Podrían ayudarme con el proceso de activación? ¡Gracias!`;
       
-      // CORREGIDO: SIN ESPACIO EN URL
+      // ✅ URL CORREGIDA: sin espacios
       const whatsappUrl = `https://wa.me/573106524453?text=${encodeURIComponent(mensaje)}`;
       window.location.href = whatsappUrl;
     };
 
-    // Cerrar sesión
     window.cerrarSesion = async function() {
-      await signOut(auth);
+      await auth.signOut();
       currentUser = null;
       tenantId = null;
       showLogin();
     };
 
-    // Navegación del panel
     window.showDashboard = function() {
       document.getElementById('login').style.display = 'none';
       document.getElementById('register').style.display = 'none';
@@ -587,24 +568,23 @@
       event.target.classList.add('active');
     };
 
-    // Funciones de datos
     async function cargarDatos() {
       if (!tenantId) return;
       
       // Cargar mesas
-      const mesasSnapshot = await getDocs(collection(db, `tenants/${tenantId}/mesas`));
+      const mesasSnapshot = await db.collection(`tenants/${tenantId}/mesas`).get();
       const mesas = [];
       mesasSnapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
       renderMesas(mesas);
       
       // Cargar meseros  
-      const meserosSnapshot = await getDocs(collection(db, `tenants/${tenantId}/meseros`));
+      const meserosSnapshot = await db.collection(`tenants/${tenantId}/meseros`).get();
       const meseros = [];
       meserosSnapshot.forEach(doc => meseros.push({ id: doc.id, ...doc.data() }));
       renderMeseros(meseros);
       
       // Cargar artículos
-      const articulosSnapshot = await getDocs(collection(db, `tenants/${tenantId}/articulos`));
+      const articulosSnapshot = await db.collection(`tenants/${tenantId}/articulos`).get();
       const articulos = [];
       articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
       renderArticulos(articulos);
@@ -626,21 +606,20 @@
             .replace(/-+/g, '-')
             .replace(/^-|-$/g, '');
         
-        await addDoc(collection(db, `tenants/${tenantId}/meseros`), {
+        await db.collection(`tenants/${tenantId}/meseros`).add({
             nombre,
             telefono,
             urlUnica,
-            createdAt: serverTimestamp()
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         cargarDatos();
     }
 
-    // Eliminar Mesero
     async function eliminarMesero(id) {
       if (!tenantId || !confirm('¿Estás seguro de eliminar este mesero?')) return;
       try {
-        const meseroRef = doc(db, `tenants/${tenantId}/meseros`, id);
-        await deleteDoc(meseroRef);
+        const meseroRef = db.collection(`tenants/${tenantId}/meseros`).doc(id);
+        await meseroRef.delete();
         cargarDatos();
         alert('✅ Mesero eliminado exitosamente');
       } catch (error) {
@@ -650,18 +629,17 @@
 
     async function crearMesaFirebase(numero, ubicacion, capacidad) {
       if (!tenantId) return;
-      await addDoc(collection(db, `tenants/${tenantId}/mesas`), {
-        numero, ubicacion, capacidad: parseInt(capacidad), estado: 'libre', createdAt: serverTimestamp()
+      await db.collection(`tenants/${tenantId}/mesas`).add({
+        numero, ubicacion, capacidad: parseInt(capacidad), estado: 'libre', createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       cargarDatos();
     }
 
-    // Eliminar Mesa
     async function eliminarMesa(id) {
       if (!tenantId || !confirm('¿Estás seguro de eliminar esta mesa?')) return;
       try {
-        const mesaRef = doc(db, `tenants/${tenantId}/mesas`, id);
-        await deleteDoc(mesaRef);
+        const mesaRef = db.collection(`tenants/${tenantId}/mesas`).doc(id);
+        await mesaRef.delete();
         cargarDatos();
         alert('✅ Mesa eliminada exitosamente');
       } catch (error) {
@@ -671,13 +649,12 @@
 
     async function crearArticuloFirebase(nombre, categoria, precio, stock) {
       if (!tenantId) return;
-      await addDoc(collection(db, `tenants/${tenantId}/articulos`), {
-        nombre, categoria, precio: parseFloat(precio), stock: parseInt(stock), createdAt: serverTimestamp()
+      await db.collection(`tenants/${tenantId}/articulos`).add({
+        nombre, categoria, precio: parseFloat(precio), stock: parseInt(stock), createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       cargarDatos();
     }
 
-    // Renderizado
     function actualizarDashboard(mesas) {
       const libre = mesas.filter(m => m.estado === 'libre').length;
       const pendiente = mesas.filter(m => m.estado === 'pendiente').length;
@@ -719,12 +696,12 @@
             <div class="list-item-title">${mesero.nombre}</div>
           </div>
           <div class="list-item-detail">Tel: ${mesero.telefono}</div>
-          <div class="list-item-detail">URL: /cashier/${mesero.urlUnica}</div>
+          <div class="list-item-detail">ID: ${mesero.id}</div>
           <div class="action-buttons">
-          <button class="action-btn copy" onclick="copiarURL('${mesero.id}')">Copiar URL</button>
-          <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.id}')">WhatsApp</button>
-          <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesero('${mesero.id}')">Eliminar</button>
-        </div>
+            <button class="action-btn copy" onclick="copiarURL('${mesero.id}')">Copiar URL</button>
+            <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.id}')">WhatsApp</button>
+            <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesero('${mesero.id}')">Eliminar</button>
+          </div>
         `;
         container.appendChild(div);
       });
@@ -770,7 +747,6 @@
       });
     }
 
-    // CRUD funciones
     window.crearMesero = async function(e) {
       e.preventDefault();
       const nombre = document.getElementById('nombreMesero').value;
@@ -810,7 +786,7 @@
       }
     };
 
-    // Utilidades
+    // ✅ UTILIDADES CORREGIDAS: ahora están en scope global
     window.copiarURL = function(meseroId) {
       const url = `${window.location.origin}/cashier.html?mid=${meseroId}`;
       navigator.clipboard.writeText(url).then(() => {
@@ -821,6 +797,7 @@
     window.enviarWhatsAppMesero = function(nombre, telefono, meseroId) {
       const url = `${window.location.origin}/cashier.html?mid=${meseroId}`;
       const mensaje = `Hola ${nombre}, accede aquí: ${url}`;
+      // ✅ URL CORREGIDA: sin espacios
       window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
   </script>
