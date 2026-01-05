@@ -721,10 +721,10 @@
           <div class="list-item-detail">Tel: ${mesero.telefono}</div>
           <div class="list-item-detail">URL: /cashier/${mesero.urlUnica}</div>
           <div class="action-buttons">
-            <button class="action-btn copy" onclick="copiarURL('${mesero.urlUnica}')">Copiar URL</button>
-            <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.urlUnica}')">WhatsApp</button>
-            <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesero('${mesero.id}')">Eliminar</button>
-          </div>
+          <button class="action-btn copy" onclick="copiarURL('${mesero.id}')">Copiar URL</button>
+          <button class="action-btn whatsapp" onclick="enviarWhatsAppMesero('${mesero.nombre}', '${mesero.telefono}', '${mesero.id}')">WhatsApp</button>
+          <button class="action-btn" style="background: #ef4444; color: white;" onclick="eliminarMesero('${mesero.id}')">Eliminar</button>
+        </div>
         `;
         container.appendChild(div);
       });
@@ -811,17 +811,16 @@
     };
 
     // Utilidades
-    window.copiarURL = function(urlUnica) {
-    const url = `${window.location.origin}/cashier.html?mesero=${urlUnica}`;
-    navigator.clipboard.writeText(url).then(() => {
+    window.copiarURL = function(meseroId) {
+      const url = `${window.location.origin}/cashier.html?mid=${meseroId}`;
+      navigator.clipboard.writeText(url).then(() => {
         alert('✅ URL copiada!\n' + url);
-    });
+      });
     };
 
-    window.enviarWhatsAppMesero = function(nombre, telefono, urlUnica) {
-      const url = window.location.origin + '/cashier/' + urlUnica;
+    window.enviarWhatsAppMesero = function(nombre, telefono, meseroId) {
+      const url = `${window.location.origin}/cashier.html?mid=${meseroId}`;
       const mensaje = `Hola ${nombre}, accede aquí: ${url}`;
-      // CORREGIDO: SIN ESPACIO EN URL
       window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
   </script>

@@ -194,52 +194,29 @@
     let canciones = [];
 
     // Extraer urlUnica de la URL (file:///cashier/andrees → "andrees")
-    function getUrlUnica() {
-      // Extraer de la URL original usando el historial
-      const originalPath = window.location.pathname;
-      
-      // Buscar el último segmento que no sea 'cashier.html'
-      const parts = originalPath.split('/');
-      for (let i = parts.length - 1; i >= 0; i--) {
-        if (parts[i] && parts[i] !== 'cashier.html') {
-          let urlUnica = parts[i];
-          // Aplicar la misma normalización que en el admin
-          urlUnica = urlUnica
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9-]/g, '')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-          return urlUnica;
-        }
-      }
-      
-      // Si no se encuentra, intentar con referer
-      const referer = document.referrer;
-      if (referer.includes('/cashier/')) {
-        const match = referer.match(/\/cashier\/([^\/?#]+)/);
-        if (match) {
-          let urlUnica = match[1];
-          urlUnica = urlUnica
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9-]/g, '')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-          return urlUnica;
-        }
-      }
-      
-      return null;
+    function getMeseroId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('mid');
     }
 
     // Buscar tenant y mesero
-    async function encontrarTenantYMesero(urlUnica) {
-      if (!urlUnica) {
-        throw new Error('URL inválida');
+    async function encontrarTenantYMeseroPorId(meseroId) {
+      if (!meseroId) throw new Error('ID de mesero no proporcionado');
+
+      const tenantsSnapshot = await getDocs(collection(db, 'tenants'));
+      for (const tenantDoc of tenantsSnapshot.docs) {
+        const tenantId = tenantDoc.id;
+        const meseroRef = doc(db, `tenants/${tenantId}/meseros`, meseroId);
+        const meseroSnap = await getDoc(meseroRef);
+        if (meseroSnap.exists()) {
+          return {
+            tenantId: tenantId,
+            mesero: { id: meseroSnap.id, ...meseroSnap.data() }
+          };
+        }
       }
+      throw new Error('Mesero no encontrado');
+    }
 
       // Buscar en todos los tenants
       const tenantsSnapshot = await getDocs(collection(db, 'tenants'));
@@ -458,42 +435,29 @@
 
     // Inicialización
     async function init() {
-
-      let initAttempted = false;
-
-      async function init() {
-        if (initAttempted) {
-          return; // Evitar segunda ejecución
-        }
-        initAttempted = true;
-        
-        try {
-          // ... resto de tu código existente ...
-        } catch (error) {
-          // ... manejo de error existente ...
-        }
-      }
       try {
-        const urlUnica = getUrlUnica();
-        document.getElementById('tenantInfo').textContent = `Buscando mesero: ${urlUnica}...`;
-        
-        const resultado = await encontrarTenantYMesero(urlUnica);
+        const meseroId = getMeseroId();
+        if (!meseroId) {
+          throw new Error('URL inválida. Falta ?mid=...');
+        }
+        document.getElementById('tenantInfo').textContent = `Cargando mesero...`;
+        const resultado = await encontrarTenantYMeseroPorId(meseroId);
         currentTenantId = resultado.tenantId;
         currentMesero = resultado.mesero;
-        
-        // Actualizar UI
+
         document.getElementById('meseroNombre').textContent = `Panel de ${currentMesero.nombre}`;
         document.getElementById('tenantInfo').textContent = `Tenant: ${currentTenantId.substring(0, 8)}...`;
-        
-        // Cargar datos
+
         await cargarMesas(currentTenantId);
         await cargarArticulos(currentTenantId);
-        
       } catch (error) {
         document.getElementById('meseroNombre').textContent = '❌ Acceso Denegado';
         document.getElementById('tenantInfo').textContent = error.message;
         document.querySelector('.tabs').style.display = 'none';
-        document.getElementById('tab-mesas').innerHTML = '<div class="card"><p style="text-align: center; color: #ef4444; padding: 20px;">No se puede acceder al panel. URL inválida o mesero no activo.</p><button onclick="window.location.href=\'index.html\'" style="margin-top: 16px; background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Volver al Login</button></div>';
+        document.getElementById('tab-mesas').innerHTML = `<div class="card">
+          <p style="text-align: center; color: #ef4444; padding: 20px;">${error.message}</p>
+          <button onclick="window.location.href='index.html'" style="margin-top: 16px; background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Volver al Login</button>
+        </div>`;
       }
     }
 
