@@ -219,25 +219,30 @@
     }
 
       // Buscar en todos los tenants
-      const tenantsSnapshot = await getDocs(collection(db, 'tenants'));
-      
-      for (const tenantDoc of tenantsSnapshot.docs) {
-        const tenantId = tenantDoc.id;
-        const meserosRef = collection(db, `tenants/${tenantId}/meseros`);
-        const q = query(meserosRef, where('urlUnica', '==', urlUnica));
-        const meserosSnapshot = await getDocs(q);
-        
-        if (!meserosSnapshot.empty) {
-          const meseroDoc = meserosSnapshot.docs[0];
-          return {
-            tenantId: tenantId,
-            mesero: { id: meseroDoc.id, ...meseroDoc.data() }
-          };
-        }
-      }
-      
-      throw new Error('Mesero no encontrado');
+      async function encontrarTenantYMesero(urlUnica) {
+  if (!urlUnica) {
+    throw new Error('urlUnica no proporcionada');
+  }
+
+  const tenantsSnapshot = await getDocs(collection(db, 'tenants'));
+  
+  for (const tenantDoc of tenantsSnapshot.docs) {
+    const tenantId = tenantDoc.id;
+    const meserosRef = collection(db, `tenants/${tenantId}/meseros`);
+    const q = query(meserosRef, where('urlUnica', '==', urlUnica));
+    const meserosSnapshot = await getDocs(q);
+    
+    if (!meserosSnapshot.empty) {
+      const meseroDoc = meserosSnapshot.docs[0];
+      return {
+        tenantId: tenantId,
+        mesero: { id: meseroDoc.id, ...meseroDoc.data() }
+      };
     }
+  }
+  
+  throw new Error('Mesero no encontrado');
+}
 
     // Cargar mesas del tenant
     async function cargarMesas(tenantId) {
