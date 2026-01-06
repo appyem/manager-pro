@@ -660,6 +660,9 @@
       const articulos = [];
       articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
       renderArticulos(articulos);
+
+      // ✅ CARGAR LOS PEDIDOS PARA EL REPORTE (ESTA LÍNEA FALTABA)
+      await cargarPedidosAdmin();
     }
 
     async function crearMeseroFirebase(nombre, telefono) {
