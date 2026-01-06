@@ -210,7 +210,7 @@
       document.getElementById('carritoContainer').innerHTML = html;
     }
 
-    // ✅ FUNCIÓN ÚNICA crearPedido (corregida duplicación)
+    // ✅ FUNCIÓN ÚNICA crearPedido (sin duplicado)
     async function crearPedido() {
       if (!currentMesaId || carrito.length === 0) return alert('⚠️ Selecciona mesa y agrega artículos');
       try {
@@ -293,6 +293,7 @@
       }
     }
 
+    // ✅ CORREGIDO: sin orderBy() para evitar necesidad de índice compuesto
     async function cargarPedidos(tenantId) {
       if (!currentMesero?.id) {
         console.warn("No se puede cargar pedidos: mesero no definido");
@@ -300,18 +301,26 @@
         return;
       }
       try {
+        // 🔥 REMOVEMOS orderBy() para evitar error de índice
         const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
-          .orderBy('createdAt', 'desc')
           .get();
         
         const pedidos = [];
         pedidosSnapshot.forEach(doc => {
           pedidos.push({ id: doc.id, ...doc.data() });
         });
+
+        // 🔥 Ordenamos manualmente en JavaScript (cliente)
+        pedidos.sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime; // descendente
+        });
         
         renderPedidos(pedidos);
       } catch (error) {
+        console.error("Error al cargar pedidos:", error);
         document.getElementById('pedidosContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error al cargar pedidos: ${error.message}</p>`;
       }
     }
@@ -433,5 +442,4 @@
   </script>
 </body>
 </html>
-
 
