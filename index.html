@@ -6,45 +6,99 @@
   <title>Gestión de Bar - Sistema Integral</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); min-height: 100vh; padding: 16px; }
+    body { background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 16px; }
     .container { max-width: 1200px; margin: 0 auto; }
     
     /* Login */
     .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .login-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); padding: 40px; width: 100%; max-width: 450px; text-align: center; }
-    .login-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px; font-weight: bold; }
-    .login-card h1 { font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
-    .login-card p { color: #6b7280; margin-bottom: 24px; font-size: 16px; }
+    .login-card { background: #1e293b; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); padding: 40px; width: 100%; max-width: 450px; text-align: center; }
+    .login-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px; font-weight: bold; }
+    .login-card h1 { font-size: 28px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .login-card p { color: #94a3b8; margin-bottom: 24px; font-size: 16px; }
     .form-group { margin-bottom: 20px; text-align: left; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px; }
-    .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; transition: border-color 0.2s; }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: #f97316; }
-    .login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s; margin-bottom: 12px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #cbd5e1; font-size: 14px; }
+    .form-group input, .form-group select { 
+      width: 100%; 
+      padding: 14px 16px; 
+      border: 2px solid #334155; 
+      border-radius: 12px; 
+      font-size: 16px; 
+      background: #0f172a;
+      color: white;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #8b5cf6; }
+    .login-btn { 
+      width: 100%; 
+      padding: 14px; 
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); 
+      color: white; 
+      border: none; 
+      border-radius: 12px; 
+      font-size: 18px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: transform 0.2s; 
+      margin-bottom: 12px; 
+    }
     .login-btn:hover { transform: translateY(-2px); opacity: 0.95; }
-    .register-link { color: #3b82f6; text-decoration: underline; cursor: pointer; font-weight: 600; }
+    .register-link { color: #93c5fd; text-decoration: underline; cursor: pointer; font-weight: 600; }
     
     /* Register Form */
     .register-container { display: none; min-height: 100vh; padding: 20px; }
-    .register-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); padding: 40px; }
+    .register-card { background: #1e293b; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); padding: 40px; }
     .register-header { text-align: center; margin-bottom: 30px; }
-    .register-header h1 { font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
-    .register-header p { color: #6b7280; font-size: 16px; }
+    .register-header h1 { font-size: 28px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .register-header p { color: #94a3b8; font-size: 16px; }
     
     /* Plans */
     .plans-section { margin: 30px 0; }
     .plans-header { text-align: center; margin-bottom: 24px; }
     .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .plan-card { border: 2px solid #e5e7eb; border-radius: 16px; padding: 24px; text-align: center; transition: all 0.3s; }
-    .plan-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-color: #ea580c; }
-    .plan-popular { border-color: #ea580c; position: relative; }
-    .plan-popular::before { content: 'MÁS POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #ea580c; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .plan-name { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
-    .plan-price { font-size: 28px; font-weight: 700; color: #ea580c; margin-bottom: 12px; }
-    .plan-duration { font-size: 14px; color: #6b7280; margin-bottom: 16px; }
+    .plan-card { 
+      border: 2px solid #334155; 
+      border-radius: 16px; 
+      padding: 24px; 
+      text-align: center; 
+      transition: all 0.3s; 
+      background: #0f172a;
+    }
+    .plan-card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3); 
+      border-color: #8b5cf6; 
+    }
+    .plan-popular { border-color: #ec4899; position: relative; }
+    .plan-popular::before { 
+      content: 'MÁS POPULAR'; 
+      position: absolute; 
+      top: -12px; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      background: #ec4899; 
+      color: white; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600; 
+    }
+    .plan-name { font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .plan-price { font-size: 28px; font-weight: 700; color: #ec4899; margin-bottom: 12px; }
+    .plan-duration { font-size: 14px; color: #94a3b8; margin-bottom: 16px; }
     .plan-features { list-style: none; margin-bottom: 20px; }
-    .plan-features li { padding: 4px 0; color: #4b5563; }
-    .plan-btn { width: 100%; padding: 12px; background: #ea580c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .plan-btn:hover { background: #c2410c; }
+    .plan-features li { padding: 4px 0; color: #cbd5e1; }
+    .plan-btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: #8b5cf6; 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: background 0.2s; 
+    }
+    .plan-btn:hover { background: #7c3aed; }
     
     /* WhatsApp Button */
     .whatsapp-btn {
@@ -71,58 +125,141 @@
     
     /* Dashboard */
     #dashboard { display: none; }
-    .header { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
-    .tabs { display: flex; overflow-x: auto; padding: 8px 0; margin-bottom: 24px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .tab-btn { padding: 12px 24px; border: none; background: none; font-size: 16px; font-weight: 600; color: #6b7280; cursor: pointer; border-radius: 8px; white-space: nowrap; margin: 0 4px; }
-    .tab-btn.active { background: #ffedd5; color: #ea580c; }
-    .tab-btn:hover:not(.active) { background: #f9fafb; }
+    .header { 
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); 
+      color: white; 
+      padding: 20px; 
+      border-radius: 16px; 
+      margin-bottom: 24px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+    }
+    .tabs { 
+      display: flex; 
+      overflow-x: auto; 
+      padding: 8px 0; 
+      margin-bottom: 24px; 
+      background: #1e293b; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .tab-btn { 
+      padding: 12px 24px; 
+      border: none; 
+      background: none; 
+      font-size: 16px; 
+      font-weight: 600; 
+      color: #94a3b8; 
+      cursor: pointer; 
+      border-radius: 8px; 
+      white-space: nowrap; 
+      margin: 0 4px; 
+    }
+    .tab-btn.active { 
+      background: rgba(139, 92, 246, 0.2); 
+      color: #e2e8f0; 
+    }
+    .tab-btn:hover:not(.active) { background: #334155; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     
     /* Stats */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px; }
-    .stat-card { background: white; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid; }
+    .stat-card { 
+      background: #1e293b; 
+      border-radius: 16px; 
+      padding: 24px; 
+      text-align: center; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border-top: 4px solid;
+    }
     .stat-card.libre { border-color: #10b981; }
     .stat-card.pendiente { border-color: #f59e0b; }
     .stat-card.pagada { border-color: #3b82f6; }
-    .stat-card.total { border-color: #8b5cf6; }
-    .stat-label { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
+    .stat-card.total { border-color: #ec4899; }
+    .stat-label { font-size: 14px; color: #94a3b8; margin-bottom: 8px; }
     .stat-value { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
     .stat-value.green { color: #10b981; }
     .stat-value.yellow { color: #f59e0b; }
     .stat-value.blue { color: #3b82f6; }
-    .stat-value.purple { color: #8b5cf6; }
+    .stat-value.pink { color: #ec4899; }
     
     /* Tables */
     .tables-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 32px; }
-    .table-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .table-card { 
+      background: #1e293b; 
+      border-radius: 16px; 
+      padding: 24px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
     .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .table-number { font-size: 20px; font-weight: 700; color: #1f2937; }
-    .table-status { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .table-status.libre { background: #dcfce7; color: #166534; }
-    .table-status.pendiente { background: #fef3c7; color: #92400e; }
-    .table-status.pagada { background: #dbeafe; color: #1e40af; }
-    .table-location { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
-    .table-capacity { font-size: 14px; color: #6b7280; }
+    .table-number { font-size: 20px; font-weight: 700; color: #f8fafc; }
+    .table-status { 
+      padding: 6px 16px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600; 
+    }
+    .table-status.libre { background: #065f46; color: #68d391; }
+    .table-status.pendiente { background: #78350f; color: #fbbf24; }
+    .table-status.pagada { background: #1e3a8a; color: #93c5fd; }
+    .table-location { font-size: 14px; color: #94a3b8; margin-bottom: 8px; }
+    .table-capacity { font-size: 14px; color: #94a3b8; }
     
     /* Forms */
-    .form-section, .list-section { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .form-section h2, .list-section h2 { font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 24px; }
+    .form-section, .list-section { 
+      background: #1e293b; 
+      border-radius: 16px; 
+      padding: 24px; 
+      margin-bottom: 24px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .form-section h2, .list-section h2 { 
+      font-size: 20px; 
+      font-weight: 700; 
+      color: #f8fafc; 
+      margin-bottom: 24px; 
+    }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px; }
     .form-group.full { grid-column: 1 / -1; }
-    .submit-btn { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+    .submit-btn { 
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); 
+      color: white; 
+      border: none; 
+      padding: 12px 24px; 
+      border-radius: 12px; 
+      font-size: 16px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: transform 0.2s; 
+    }
     .submit-btn:hover { transform: translateY(-2px); }
     
     /* Lists */
-    .list-item { padding: 16px; border-bottom: 1px solid #f3f4f6; }
+    .list-item { padding: 16px; border-bottom: 1px solid #334155; }
     .list-item:last-child { border-bottom: none; }
     .list-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .list-item-title { font-weight: 600; font-size: 16px; color: #1f2937; }
-    .list-item-detail { font-size: 14px; color: #6b7280; }
+    .list-item-title { font-weight: 600; font-size: 16px; color: #f8fafc; }
+    .list-item-detail { font-size: 14px; color: #94a3b8; }
     .action-buttons { display: flex; gap: 12px; margin-top: 12px; }
-    .action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .action-btn.copy { background: #f3f4f6; color: #4b5563; }
+    .action-btn { 
+      padding: 6px 12px; 
+      border: none; 
+      border-radius: 6px; 
+      font-size: 12px; 
+      font-weight: 600; 
+      cursor: pointer; 
+    }
+    .action-btn.copy { background: #334155; color: #cbd5e1; }
     .action-btn.whatsapp { background: #10b981; color: white; }
+    .action-btn.confirm { background: #10b981; color: white; }
+    .action-btn.reject { background: #ef4444; color: white; }
+    .action-btn.restock { background: #3b82f6; color: white; }
+    
+    /* Stock Alert */
+    .stock-alert { color: #ef4444; font-weight: bold; }
     
     @media (max-width: 768px) {
       .register-card { padding: 30px 20px; }
@@ -150,7 +287,7 @@
         </div>
         
         <button class="login-btn" onclick="iniciarSesion()">🔐 Iniciar Sesión</button>
-        <p style="font-size: 14px; color: #6b7280;">
+        <p style="font-size: 14px; color: #94a3b8;">
           ¿No tienes cuenta? <span class="register-link" onclick="showRegister()">Solicita tu cuenta aquí</span>
         </p>
       </div>
@@ -254,7 +391,7 @@
             Enviar Solicitud por WhatsApp
           </button>
           
-          <button type="button" style="margin-top: 15px; background: none; border: none; color: #6b7280; cursor: pointer;" onclick="showLogin()">
+          <button type="button" style="margin-top: 15px; background: none; border: none; color: #94a3b8; cursor: pointer;" onclick="showLogin()">
             ← Volver al Login
           </button>
         </form>
@@ -276,6 +413,9 @@
         <button class="tab-btn" onclick="showTab('meseros')">👥 Meseros</button>
         <button class="tab-btn" onclick="showTab('mesas')">🪑 Mesas</button>
         <button class="tab-btn" onclick="showTab('articulos')">🍷 Artículos</button>
+        <button class="tab-btn" onclick="showTab('pagos')">💰 Pagos</button>
+        <button class="tab-btn" onclick="showTab('cierre')">CloseOperation Caja</button>
+        <button class="tab-btn" onclick="showTab('dj')">🎧 DJ</button>
         <button class="tab-btn" onclick="showTab('reportes')">📈 Reportes</button>
       </div>
       
@@ -295,12 +435,12 @@
             <div class="stat-value blue" id="mesasPagadas">0</div>
           </div>
           <div class="stat-card total">
-            <div class="stat-label">Total Pendiente</div>
-            <div class="stat-value purple" id="totalPendiente">$0</div>
+            <div class="stat-label">Total Ventas</div>
+            <div class="stat-value pink" id="totalVentas">$0</div>
           </div>
         </div>
         
-        <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 20px;">Estado de Mesas</h2>
+        <h2 style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 20px;">Estado de Mesas</h2>
         <div class="tables-grid" id="tablesContainer">
           <!-- Mesas se cargarán aquí -->
         </div>
@@ -412,12 +552,91 @@
         </div>
       </div>
       
-      <!-- Reportes Tab -->
+      <!-- Pagos Tab (CORREGIDO) -->
+      <div class="tab-content" id="tab-pagos">
+        <div class="list-section">
+          <h2>Pagos Pendientes de Confirmación</h2>
+          <div id="pagosPendientes">
+            <p style="text-align: center; color: #94a3b8; padding: 20px;">No hay pagos pendientes</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cierre de Caja Tab (CORREGIDO) -->
+      <div class="tab-content" id="tab-cierre">
+        <div class="form-section">
+          <h2>CloseOperation Caja Diario</h2>
+          <div class="stats-grid">
+            <div class="stat-card total">
+              <div class="stat-label">Total Vendido</div>
+              <div class="stat-value pink" id="cierreTotal">$0</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-label">Mesas Atendidas</div>
+              <div class="stat-value blue" id="cierreMesas">0</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-label">Pagos Confirmados</div>
+              <div class="stat-value green" id="cierrePagos">0</div>
+            </div>
+            <div class="stat-card yellow">
+              <div class="stat-label">Pagos Pendientes</div>
+              <div class="stat-value yellow" id="cierrePendientes">0</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="cierreFecha">Fecha</label>
+            <input type="date" id="cierreFecha" value="2026-01-07" readonly style="background:#0f172a;">
+          </div>
+          
+          <button class="submit-btn" onclick="generarCierreCaja()">CloseOperation Caja y Generar Reporte</button>
+        </div>
+      </div>
+      
+      <!-- DJ Tab (CORREGIDO) -->
+      <div class="tab-content" id="tab-dj">
+        <div class="form-section">
+          <h2>🎧 Configuración del DJ</h2>
+          <p style="color: #94a3b8; margin-bottom: 20px;">Genera la URL única para que el DJ reciba las peticiones de canciones de tus meseros.</p>
+          
+          <div class="form-group">
+            <label>URL del DJ</label>
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <input type="text" id="djUrl" readonly style="flex:1; background:#0f172a; color:white; border:2px solid #334155; border-radius:8px; padding:10px;">
+              <button class="action-btn copy" onclick="copiarDjUrl()">Copiar</button>
+            </div>
+          </div>
+          
+          <div class="action-buttons" style="margin-top: 20px;">
+            <button class="action-btn whatsapp" onclick="enviarDjWhatsApp()">Enviar por WhatsApp</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Reportes Tab (CORREGIDO) -->
       <div class="tab-content" id="tab-reportes">
+        <div class="form-section">
+          <h2>Filtros de Reporte</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="reporteDesde">Desde</label>
+              <input type="date" id="reporteDesde" required>
+            </div>
+            <div class="form-group">
+              <label for="reporteHasta">Hasta</label>
+              <input type="date" id="reporteHasta" required>
+            </div>
+            <div class="form-group full">
+              <button class="submit-btn" onclick="generarReporte()">Generar Reporte</button>
+            </div>
+          </div>
+        </div>
+        
         <div class="stats-grid">
           <div class="stat-card total">
             <div class="stat-label">Ventas Totales</div>
-            <div class="stat-value purple" id="ventasTotales">$0</div>
+            <div class="stat-value pink" id="ventasTotales">$0</div>
           </div>
           <div class="stat-card blue">
             <div class="stat-label">Pedidos Totales</div>
@@ -436,20 +655,20 @@
         <div class="list-section">
           <h2>Historia de Transacciones</h2>
           <div id="transaccionesList">
-            <p style="text-align: center; color: #6b7280; padding: 20px;">No hay transacciones</p>
+            <p style="text-align: center; color: #94a3b8; padding: 20px;">No hay transacciones</p>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase SDK (modo compat - sin módulos) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // Configuración de Firebase
+    // === CONFIGURACIÓN EXACTAMENTE IGUAL ===
     const firebaseConfig = {
       apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
       authDomain: "manager-pro-ec292.firebaseapp.com",
@@ -462,11 +681,11 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Variables
     let currentUser = null;
     let tenantId = null;
+    let mesasUnsubscribe = null;
 
-    // Función para crear tenant
+    // === FUNCIONES EXISTENTES SIN CAMBIOS ===
     async function crearTenant(userId, email) {
       const tenantRef = db.collection('tenants').doc(userId);
       await tenantRef.set({
@@ -477,16 +696,13 @@
       });
     }
 
-    // Login
     window.iniciarSesion = async function() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
-      
       if (!email || !password) {
         alert('⚠️ Por favor ingresa email y contraseña');
         return;
       }
-      
       try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         currentUser = userCredential.user;
@@ -495,6 +711,7 @@
         document.getElementById('tenantIdDisplay').textContent = tenantId.substring(0, 8) + '...';
         showDashboard();
         cargarDatos();
+        generarUrlDj();
       } catch (error) {
         alert('❌ Credenciales incorrectas o cuenta no activada.\n\nContacta al soporte para activar tu cuenta.');
       }
@@ -515,9 +732,9 @@
     window.selectPlan = function(plan) {
       document.getElementById('selectedPlan').value = plan;
       document.querySelectorAll('.plan-btn').forEach(btn => {
-        btn.style.background = '#ea580c';
+        btn.style.background = '#8b5cf6';
       });
-      event.target.style.background = '#c2410c';
+      event.target.style.background = '#7c3aed';
     };
 
     window.enviarWhatsApp = function() {
@@ -526,12 +743,10 @@
       const email = document.getElementById('email').value;
       const phone = document.getElementById('phone').value;
       const selectedPlan = document.getElementById('selectedPlan').value;
-      
       if (!fullName || !businessName || !email || !phone || !selectedPlan) {
         alert('⚠️ Por favor completa todos los campos y selecciona un plan');
         return;
       }
-      
       const mensaje = `¡Hola! Quisiera solicitar una cuenta para el sistema de gestión de bares.\n\n` +
                      `📋 Datos del solicitante:\n` +
                      `• Nombre: ${fullName}\n` +
@@ -541,15 +756,12 @@
                      `💰 Plan seleccionado:\n` +
                      `• ${selectedPlan}\n\n` +
                      `¿Podrían ayudarme con el proceso de activación? ¡Gracias!`;
-      
       const whatsappUrl = `https://wa.me/573106524453?text=${encodeURIComponent(mensaje)}`;
       window.location.href = whatsappUrl;
     };
 
     window.cerrarSesion = async function() {
-      // 🔥 Limpiar el listener
       if (mesasUnsubscribe) mesasUnsubscribe();
-      
       await auth.signOut();
       currentUser = null;
       tenantId = null;
@@ -567,90 +779,45 @@
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('tab-' + tabName).classList.add('active');
       event.target.classList.add('active');
+
+      // Cargar datos específicos si es necesario
+      if (tabName === 'pagos') {
+        cargarPagosPendientes();
+      } else if (tabName === 'cierre') {
+        cargarCierreCaja();
+      } else if (tabName === 'dj') {
+        generarUrlDj();
+      } else if (tabName === 'reportes') {
+        // Set default dates (last 7 days)
+        const today = new Date();
+        const lastWeek = new Date(today);
+        lastWeek.setDate(today.getDate() - 7);
+        document.getElementById('reporteHasta').valueAsDate = today;
+        document.getElementById('reporteDesde').valueAsDate = lastWeek;
+        cargarPedidosAdmin(); // Load initial data
+      }
     };
 
-    // ✅ NUEVA FUNCIÓN: Cargar pedidos para el admin
-    async function cargarPedidosAdmin() {
-      if (!tenantId) return;
-      try {
-        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`).get();
-        let total = 0;
-        let pendientes = 0;
-        let pagados = 0;
-        let totales = 0;
-        
-        pedidosSnapshot.forEach(doc => {
-          const pedido = doc.data();
-          totales++;
-          if (pedido.estado === 'pendiente') {
-            pendientes++;
-            total += pedido.total || 0;
-          } else if (pedido.estado === 'pagada') {
-            pagados++;
-          }
-        });
-        
-        // Actualizar el dashboard
-        document.getElementById('pedidosTotales').textContent = totales;
-        document.getElementById('pedidosPendientes').textContent = pendientes;
-        document.getElementById('pedidosPagados').textContent = pagados;
-        document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
-        
-        // Cargar lista de transacciones
-        const transaccionesList = document.getElementById('transaccionesList');
-        if (transaccionesList) {
-          let html = '';
-          const pedidosArray = [];
-          pedidosSnapshot.forEach(doc => pedidosArray.push({ id: doc.id, ...doc.data() }));
-          // Ordenar por fecha descendente
-          pedidosArray.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-          const ultimos = pedidosArray.slice(0, 10);
-          if (ultimos.length === 0) {
-            transaccionesList.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 20px;">No hay transacciones</p>';
-          } else {
-            html = '<ul style="list-style: none; padding: 0;">';
-            ultimos.forEach(p => {
-              const estado = p.estado === 'pendiente' ? 'Pendiente' : 'Pagado';
-              html += `<li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-                <strong>Pedido #${p.id.substring(0,6)}</strong> - $${(p.total || 0).toLocaleString()} - ${estado}
-              </li>`;
-            });
-            html += '</ul>';
-            transaccionesList.innerHTML = html;
-          }
-        }
-      } catch (error) {
-        console.error("Error al cargar pedidos del admin:", error);
-      }
-    }
-
-    // Funciones de datos
-    // 🔥 Variable global para el listener de mesas
+    // === FUNCIONES DE DATOS ACTUALIZADAS ===
     let mesasUnsubscribe = null;
 
     async function cargarDatos() {
       if (!tenantId) return;
-
-      // 🔥 Limpiar listener anterior
       if (mesasUnsubscribe) mesasUnsubscribe();
-
-      // 🔥 Escuchar cambios en tiempo real
+      
       const mesasRef = db.collection(`tenants/${tenantId}/mesas`);
       mesasUnsubscribe = mesasRef.onSnapshot((snapshot) => {
         const mesas = [];
         snapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
-        
-        // ✅ Actualizar el dashboard INMEDIATAMENTE
         actualizarDashboard(mesas);
-        
-        // ✅ Actualizar la lista de mesas en la pestaña "Mesas"
-        renderMesas(mesas);
+        if (document.getElementById('tab-mesas').classList.contains('active')) {
+          renderMesas(mesas);
+        }
       }, (error) => {
         console.error("Error al escuchar mesas:", error);
         alert('❌ Error al cargar mesas: ' + error.message);
       });
 
-      // Cargar otros datos que no cambian frecuentemente (estáticos)
       const meserosSnapshot = await db.collection(`tenants/${tenantId}/meseros`).get();
       const meseros = [];
       meserosSnapshot.forEach(doc => meseros.push({ id: doc.id, ...doc.data() }));
@@ -661,13 +828,12 @@
       articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
       renderArticulos(articulos);
 
-      // ✅ CARGAR LOS PEDIDOS PARA EL REPORTE (ESTA LÍNEA FALTABA)
+      // Load initial reports data
       await cargarPedidosAdmin();
     }
 
     async function crearMeseroFirebase(nombre, telefono) {
       if (!tenantId) return;
-      
       const urlUnica = nombre
         .toLowerCase()
         .normalize('NFD')
@@ -676,7 +842,6 @@
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
-      
       await db.collection(`tenants/${tenantId}/meseros`).add({
         nombre,
         telefono,
@@ -735,7 +900,7 @@
       document.getElementById('mesasLibres').textContent = libre;
       document.getElementById('mesasPendientes').textContent = pendiente;
       document.getElementById('mesasPagadas').textContent = pagada;
-      document.getElementById('totalPendiente').textContent = '$' + totalPendiente.toLocaleString();
+      document.getElementById('totalVentas').textContent = '$' + totalPendiente.toLocaleString();
       
       const container = document.getElementById('tablesContainer');
       container.innerHTML = '';
@@ -804,6 +969,10 @@
       const container = document.getElementById('articulosList');
       container.innerHTML = '';
       articulos.forEach(articulo => {
+        let stockClass = '';
+        if (articulo.stock < 5) {
+          stockClass = ' stock-alert';
+        }
         const div = document.createElement('div');
         div.className = 'list-item';
         div.innerHTML = `
@@ -812,11 +981,320 @@
           </div>
           <div class="list-item-detail">Categoría: ${articulo.categoria || 'Sin categoría'}</div>
           <div class="list-item-detail">Precio: $${(articulo.precio || 0).toLocaleString()}</div>
-          <div class="list-item-detail">Stock: ${articulo.stock || 0}</div>
+          <div class="list-item-detail${stockClass}">Stock: ${articulo.stock || 0}</div>
+          <div class="action-buttons" style="margin-top: 10px;">
+            <button class="action-btn restock" onclick="reabastecerArticulo('${articulo.id}', '${articulo.nombre}')">Reabastecer</button>
+          </div>
         `;
         container.appendChild(div);
       });
     }
+
+    // === NUEVAS FUNCIONES IMPLEMENTADAS ===
+    
+    // Cargar pedidos para admin (reportes)
+    async function cargarPedidosAdmin() {
+      if (!tenantId) return;
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`).get();
+        let total = 0;
+        let pendientes = 0;
+        let pagados = 0;
+        let totales = 0;
+        
+        pedidosSnapshot.forEach(doc => {
+          const pedido = doc.data();
+          totales++;
+          if (pedido.estado === 'pendiente') {
+            pendientes++;
+            total += pedido.total || 0;
+          } else if (pedido.estado === 'pagada' || pedido.estado === 'confirmado') {
+            pagados++;
+            total += pedido.total || 0;
+          }
+        });
+        
+        document.getElementById('pedidosTotales').textContent = totales;
+        document.getElementById('pedidosPendientes').textContent = pendientes;
+        document.getElementById('pedidosPagados').textContent = pagados;
+        document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
+        
+        // Actualizar dashboard total
+        document.getElementById('totalVentas').textContent = '$' + total.toLocaleString();
+        
+        // Cargar transacciones
+        const transaccionesList = document.getElementById('transaccionesList');
+        if (transaccionesList) {
+          let html = '';
+          const pedidosArray = [];
+          pedidosSnapshot.forEach(doc => pedidosArray.push({ id: doc.id, ...doc.data() }));
+          pedidosArray.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+          const ultimos = pedidosArray.slice(0, 10);
+          if (ultimos.length === 0) {
+            transaccionesList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 20px;">No hay transacciones</p>';
+          } else {
+            html = '<ul style="list-style: none; padding: 0;">';
+            ultimos.forEach(p => {
+              const estado = p.estado === 'pendiente' ? 'Pendiente' : p.estado === 'pagada' ? 'Pagado (Pendiente Confirmación)' : 'Confirmado';
+              html += `<li style="padding: 8px 0; border-bottom: 1px solid #334155;">
+                <strong>Pedido #${p.id.substring(0,6)}</strong> - $${(p.total || 0).toLocaleString()} - ${estado}
+              </li>`;
+            });
+            html += '</ul>';
+            transaccionesList.innerHTML = html;
+          }
+        }
+      } catch (error) {
+        console.error("Error al cargar pedidos del admin:", error);
+      }
+    }
+
+    // Cargar pagos pendientes de confirmación
+    async function cargarPagosPendientes() {
+      if (!tenantId) return;
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
+          .where('estado', '==', 'pagada')
+          .get();
+        
+        const container = document.getElementById('pagosPendientes');
+        if (pedidosSnapshot.empty) {
+          container.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 20px;">No hay pagos pendientes</p>';
+          return;
+        }
+        
+        let html = '';
+        pedidosSnapshot.forEach(doc => {
+          const p = doc.data();
+          html += `
+            <div class="list-item">
+              <div class="list-item-header">
+                <div class="list-item-title">Pedido #${doc.id.substring(0,6)} - Mesa ${p.mesaNumero || p.mesaId}</div>
+              </div>
+              <div class="list-item-detail">Total: $${(p.total || 0).toLocaleString()}</div>
+              <div class="list-item-detail">Mesero: ${p.meseroNombre}</div>
+              <div class="list-item-detail">Forma de Pago: ${p.formaPago || 'Efectivo'}</div>
+              <div class="action-buttons">
+                <button class="action-btn confirm" onclick="confirmarPago('${doc.id}')">✅ Confirmar Pago</button>
+                <button class="action-btn reject" onclick="rechazarPago('${doc.id}')">❌ Rechazar</button>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (error) {
+        console.error("Error al cargar pagos pendientes:", error);
+        document.getElementById('pagosPendientes').innerHTML = `<p style="text-align: center; color: #ef4444;">Error: ${error.message}</p>`;
+      }
+    }
+
+    // Confirmar pago
+    async function confirmarPago(pedidoId) {
+      if (!confirm('¿Confirmar que el pago fue recibido correctamente?')) return;
+      try {
+        await db.collection(`tenants/${tenantId}/pedidos`).doc(pedidoId).update({
+          estado: 'confirmado',
+          confirmadoAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert('✅ Pago confirmado exitosamente');
+        cargarPagosPendientes();
+        cargarPedidosAdmin();
+        // Actualizar estado de la mesa
+        const pedidoDoc = await db.collection(`tenants/${tenantId}/pedidos`).doc(pedidoId).get();
+        const pedido = pedidoDoc.data();
+        if (pedido.mesaId) {
+          await db.collection(`tenants/${tenantId}/mesas`).doc(pedido.mesaId).update({ estado: 'libre' });
+        }
+        cargarDatos(); // Refresh mesas
+      } catch (error) {
+        alert('❌ Error al confirmar pago: ' + error.message);
+      }
+    }
+
+    // Rechazar pago
+    async function rechazarPago(pedidoId) {
+      if (!confirm('¿Rechazar este pago? El pedido volverá a estado pendiente.')) return;
+      try {
+        await db.collection(`tenants/${tenantId}/pedidos`).doc(pedidoId).update({
+          estado: 'pendiente'
+        });
+        alert('🔄 Pago rechazado. Pedido vuelve a estado pendiente.');
+        cargarPagosPendientes();
+        cargarPedidosAdmin();
+      } catch (error) {
+        alert('❌ Error al rechazar pago: ' + error.message);
+      }
+    }
+
+    // Cargar cierre de caja
+    async function cargarCierreCaja() {
+      if (!tenantId) return;
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const hoyTimestamp = firebase.firestore.Timestamp.fromDate(hoy);
+      
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
+          .where('pagadoAt', '>=', hoyTimestamp)
+          .get();
+        
+        let totalVendido = 0;
+        let mesas = new Set();
+        let confirmados = 0;
+        let pendientes = 0;
+        
+        pedidosSnapshot.forEach(doc => {
+          const p = doc.data();
+          totalVendido += p.total || 0;
+          if (p.mesaId) mesas.add(p.mesaId);
+          if (p.estado === 'confirmado') confirmados++;
+          if (p.estado === 'pagada') pendientes++;
+        });
+        
+        document.getElementById('cierreTotal').textContent = '$' + totalVendido.toLocaleString();
+        document.getElementById('cierreMesas').textContent = mesas.size;
+        document.getElementById('cierrePagos').textContent = confirmados;
+        document.getElementById('cierrePendientes').textContent = pendientes;
+        document.getElementById('cierreFecha').valueAsDate = hoy;
+      } catch (error) {
+        console.error("Error al cargar cierre de caja:", error);
+      }
+    }
+
+    // Generar cierre de caja
+    async function generarCierreCaja() {
+      if (!confirm('¿Cerrar caja para el día de hoy? Esta acción marcará todos los pagos pendientes como revisados.')) return;
+      try {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const hoyTimestamp = firebase.firestore.Timestamp.fromDate(hoy);
+        
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
+          .where('pagadoAt', '>=', hoyTimestamp)
+          .where('estado', '==', 'pagada')
+          .get();
+        
+        const batch = db.batch();
+        pedidosSnapshot.docs.forEach(doc => {
+          batch.update(doc.ref, { estado: 'cerrado' });
+        });
+        
+        await batch.commit();
+        alert('✅ Caja cerrada exitosamente. Reporte generado.');
+        cargarCierreCaja();
+        cargarPagosPendientes();
+      } catch (error) {
+        alert('❌ Error al cerrar caja: ' + error.message);
+      }
+    }
+
+    // Generar reporte por fechas
+    async function generarReporte() {
+      const desde = document.getElementById('reporteDesde').value;
+      const hasta = document.getElementById('reporteHasta').value;
+      
+      if (!desde || !hasta) {
+        alert('⚠️ Selecciona ambas fechas');
+        return;
+      }
+      
+      const desdeDate = new Date(desde);
+      const hastaDate = new Date(hasta);
+      hastaDate.setHours(23, 59, 59, 999);
+      
+      const desdeTimestamp = firebase.firestore.Timestamp.fromDate(desdeDate);
+      const hastaTimestamp = firebase.firestore.Timestamp.fromDate(hastaDate);
+      
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
+          .where('createdAt', '>=', desdeTimestamp)
+          .where('createdAt', '<=', hastaTimestamp)
+          .get();
+        
+        let total = 0;
+        let pendientes = 0;
+        let pagados = 0;
+        let totales = 0;
+        
+        const pedidosArray = [];
+        pedidosSnapshot.forEach(doc => {
+          const p = doc.data();
+          pedidosArray.push({ id: doc.id, ...p });
+          totales++;
+          if (p.estado === 'pendiente') {
+            pendientes++;
+          } else if (p.estado === 'pagada' || p.estado === 'confirmado' || p.estado === 'cerrado') {
+            pagados++;
+            total += p.total || 0;
+          }
+        });
+        
+        document.getElementById('pedidosTotales').textContent = totales;
+        document.getElementById('pedidosPendientes').textContent = pendientes;
+        document.getElementById('pedidosPagados').textContent = pagados;
+        document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
+        
+        // Actualizar transacciones
+        const transaccionesList = document.getElementById('transaccionesList');
+        if (pedidosArray.length === 0) {
+          transaccionesList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 20px;">No hay transacciones en este periodo</p>';
+        } else {
+          let html = '<ul style="list-style: none; padding: 0;">';
+          pedidosArray.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+          pedidosArray.forEach(p => {
+            const estado = p.estado === 'pendiente' ? 'Pendiente' : p.estado === 'pagada' ? 'Pagado (Pendiente Confirmación)' : 'Confirmado';
+            html += `<li style="padding: 8px 0; border-bottom: 1px solid #334155;">
+              <strong>Pedido #${p.id.substring(0,6)}</strong> - $${(p.total || 0).toLocaleString()} - ${estado}
+            </li>`;
+          });
+          html += '</ul>';
+          transaccionesList.innerHTML = html;
+        }
+      } catch (error) {
+        alert('❌ Error al generar reporte: ' + error.message);
+      }
+    }
+
+    // Reabastecer artículo
+    async function reabastecerArticulo(articuloId, nombre) {
+      const cantidad = prompt(`¿Cuántas unidades deseas agregar a ${nombre}?`);
+      if (cantidad && !isNaN(cantidad) && parseInt(cantidad) > 0) {
+        try {
+          const articuloRef = db.collection(`tenants/${tenantId}/articulos`).doc(articuloId);
+          await articuloRef.update({
+            stock: firebase.firestore.FieldValue.increment(parseInt(cantidad))
+          });
+          alert('✅ Stock actualizado exitosamente');
+          cargarDatos();
+        } catch (error) {
+          alert('❌ Error al actualizar stock: ' + error.message);
+        }
+      }
+    }
+
+    // Generar URL del DJ
+    function generarUrlDj() {
+      if (!tenantId) return;
+      const datos = btoa(JSON.stringify({ tenantId }));
+      const djUrl = `${window.location.origin}/dj.html?data=${encodeURIComponent(datos)}`;
+      document.getElementById('djUrl').value = djUrl;
+    }
+
+    window.copiarDjUrl = function() {
+      const url = document.getElementById('djUrl').value;
+      if (url) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert('✅ URL del DJ copiada!');
+        });
+      }
+    };
+
+    window.enviarDjWhatsApp = function() {
+      const url = document.getElementById('djUrl').value;
+      if (!url) return;
+      const mensaje = `Hola, accede al panel del DJ aquí:\n${url}`;
+      window.open(`https://wa.me/573106524453?text=${encodeURIComponent(mensaje)}`, '_blank');
+    };
 
     // CRUD funciones
     window.crearMesero = async function(e) {
