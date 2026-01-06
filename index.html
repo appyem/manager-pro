@@ -443,7 +443,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK (modo compat - NO usar type="module") -->
+  <!-- Firebase SDK (modo compat - sin módulos) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -458,7 +458,6 @@
       messagingSenderId: "1077289364014",
       appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -543,7 +542,6 @@
                      `• ${selectedPlan}\n\n` +
                      `¿Podrían ayudarme con el proceso de activación? ¡Gracias!`;
       
-      // ✅ URL CORREGIDA: sin espacios
       const whatsappUrl = `https://wa.me/573106524453?text=${encodeURIComponent(mensaje)}`;
       window.location.href = whatsappUrl;
     };
@@ -568,6 +566,62 @@
       event.target.classList.add('active');
     };
 
+    // ✅ NUEVA FUNCIÓN: Cargar pedidos para el admin
+    async function cargarPedidosAdmin() {
+      if (!tenantId) return;
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`).get();
+        let total = 0;
+        let pendientes = 0;
+        let pagados = 0;
+        let totales = 0;
+        
+        pedidosSnapshot.forEach(doc => {
+          const pedido = doc.data();
+          totales++;
+          if (pedido.estado === 'pendiente') {
+            pendientes++;
+            total += pedido.total || 0;
+          } else if (pedido.estado === 'pagada') {
+            pagados++;
+          }
+        });
+        
+        // Actualizar el dashboard
+        document.getElementById('pedidosTotales').textContent = totales;
+        document.getElementById('pedidosPendientes').textContent = pendientes;
+        document.getElementById('pedidosPagados').textContent = pagados;
+        document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
+        
+        // Cargar lista de transacciones
+        const transaccionesList = document.getElementById('transaccionesList');
+        if (transaccionesList) {
+          let html = '';
+          const pedidosArray = [];
+          pedidosSnapshot.forEach(doc => pedidosArray.push({ id: doc.id, ...doc.data() }));
+          // Ordenar por fecha descendente
+          pedidosArray.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+          const ultimos = pedidosArray.slice(0, 10);
+          if (ultimos.length === 0) {
+            transaccionesList.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 20px;">No hay transacciones</p>';
+          } else {
+            html = '<ul style="list-style: none; padding: 0;">';
+            ultimos.forEach(p => {
+              const estado = p.estado === 'pendiente' ? 'Pendiente' : 'Pagado';
+              html += `<li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                <strong>Pedido #${p.id.substring(0,6)}</strong> - $${(p.total || 0).toLocaleString()} - ${estado}
+              </li>`;
+            });
+            html += '</ul>';
+            transaccionesList.innerHTML = html;
+          }
+        }
+      } catch (error) {
+        console.error("Error al cargar pedidos del admin:", error);
+      }
+    }
+
+    // Funciones de datos
     async function cargarDatos() {
       if (!tenantId) return;
       
@@ -591,28 +645,30 @@
       
       // Actualizar dashboard
       actualizarDashboard(mesas);
+      
+      // ✅ CARGAR PEDIDOS PARA EL ADMIN
+      await cargarPedidosAdmin();
     }
 
     async function crearMeseroFirebase(nombre, telefono) {
-        if (!tenantId) return;
-        
-        // Normalización CONSISTENTE con cashier.html
-        const urlUnica = nombre
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-        
-        await db.collection(`tenants/${tenantId}/meseros`).add({
-            nombre,
-            telefono,
-            urlUnica,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        cargarDatos();
+      if (!tenantId) return;
+      
+      const urlUnica = nombre
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      await db.collection(`tenants/${tenantId}/meseros`).add({
+        nombre,
+        telefono,
+        urlUnica,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      cargarDatos();
     }
 
     async function eliminarMesero(id) {
@@ -747,6 +803,7 @@
       });
     }
 
+    // CRUD funciones
     window.crearMesero = async function(e) {
       e.preventDefault();
       const nombre = document.getElementById('nombreMesero').value;
@@ -786,9 +843,8 @@
       }
     };
 
-    // ✅ UTILIDADES CORREGIDAS: ahora están en scope global
+    // Utilidades
     window.copiarURL = function(meseroId, meseroNombre, tenantId) {
-      // Codificar los datos en la URL
       const datos = btoa(JSON.stringify({
         meseroId,
         meseroNombre,

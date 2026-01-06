@@ -1,4 +1,19 @@
-<!DOCTYPE html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -40,6 +55,8 @@
     .carrito-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
     .carrito-total { font-size: 20px; font-weight: 700; text-align: right; margin-top: 16px; color: #059669; }
     .crear-pedido-btn { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; }
+    /* Pedidos */
+    .pedidos-list { max-height: 500px; overflow-y: auto; }
     /* DJ Form */
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px; }
@@ -64,19 +81,74 @@
       <button class="tab-btn" data-tab="dj">🎵 DJ</button>
     </div>
 
-    <div id="contentArea">
+    <div id="tab-mesas" class="tab-content active">
       <div class="card">
-        <p style="text-align: center;">Cargando datos del mesero...</p>
+        <h2>🪑 Selección de Mesa</h2>
+        <p>Selecciona la mesa que deseas atender</p>
+        <div id="mesasContainer">
+          <p style="text-align: center; color: #6b7280;">Cargando mesas...</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-menu" class="tab-content">
+      <div class="card">
+        <h2>🍎 Menú de Bebidas</h2>
+        <div id="menuContainer">
+          <p style="text-align: center; color: #6b7280;">Cargando menú...</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-carrito" class="tab-content">
+      <div class="card">
+        <h2>🛒 Carrito de Pedidos</h2>
+        <div id="carritoContainer">
+          <p style="text-align: center; color: #6b7280;">Carrito vacío</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-pedidos" class="tab-content">
+      <div class="card">
+        <h2>📋 Pedidos Activos</h2>
+        <div id="pedidosContainer" class="pedidos-list">
+          <p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-pagos" class="tab-content">
+      <div class="card">
+        <h2>💰 Registro de Pagos</h2>
+        <div id="pagosContainer">
+          <p style="text-align: center; color: #6b7280;">Listo para procesar pagos</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="tab-dj" class="tab-content">
+      <div class="card">
+        <h2>🎵 Solicitar Canciones al DJ</h2>
+        <div class="form-group">
+          <label for="cancionInput">Nombre de la Canción *</label>
+          <input type="text" id="cancionInput" placeholder="Despacito" required>
+        </div>
+        <div class="form-group">
+          <label for="artistaInput">Artista (opcional)</label>
+          <input type="text" id="artistaInput" placeholder="Luis Fonsi">
+        </div>
+        <button class="submit-btn" onclick="solicitarCancion()" style="background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;">Enviar al DJ</button>
+        <div id="djContainer" style="margin-top: 20px;"><p style="text-align: center; color: #6b7280;">Listo para enviar peticiones</p></div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase SDK (CORREGIDO: sin espacios) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
       authDomain: "manager-pro-ec292.firebaseapp.com",
@@ -88,29 +160,34 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Variables globales
     let currentMesero = null;
     let currentTenantId = null;
     let currentMesaId = null;
     let carrito = [];
 
-    // ✅ Extraer datos de la URL
-    function getMeseroData() {
+    // ✅ EXTRAER DATOS DE LA URL (USA ?mid=... DIRECTAMENTE)
+    function getMeseroIdFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      const dataParam = params.get('data');
-      if (!dataParam) return null;
-      
-      try {
-        const decoded = decodeURIComponent(dataParam);
-        const jsonStr = atob(decoded);
-        return JSON.parse(jsonStr);
-      } catch (e) {
-        console.error('Error al decodificar datos:', e);
-        return null;
-      }
+      return params.get('mid');
     }
 
-    // ✅ Renderizar mesas
+    // ✅ ENCONTRAR MESERO POR ID (BUSCA EN TODOS LOS TENANTS)
+    async function encontrarTenantYMeseroPorId(meseroId) {
+      const tenantsSnapshot = await db.collection('tenants').get();
+      for (const tenantDoc of tenantsSnapshot.docs) {
+        const tenantId = tenantDoc.id;
+        const meseroDoc = await db.collection(`tenants/${tenantId}/meseros`).doc(meseroId).get();
+        if (meseroDoc.exists()) {
+          return {
+            tenantId: tenantId,
+            mesero: { id: meseroDoc.id, ...meseroDoc.data() }
+          };
+        }
+      }
+      throw new Error('Mesero no encontrado');
+    }
+
+    // ✅ FUNCIONES DE RENDER (igual que antes)
     function renderMesas(mesas) {
       const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
       let html = '';
@@ -127,7 +204,6 @@
       document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #6b7280;">No hay mesas disponibles</p>';
     }
 
-    // ✅ Renderizar menú
     function renderMenu(articulos) {
       const categorias = [...new Set(articulos.map(a => a.categoria).filter(c => c))];
       let html = '<div class="categorias-filtros"><button class="categoria-btn active" onclick="filtrarCategoria(\'all\')">Todos</button>';
@@ -142,14 +218,12 @@
       document.getElementById('menuContainer').innerHTML = html;
     }
 
-    /// ✅ Renderizar pedidos
     function renderPedidos(pedidos) {
       if (pedidos.length === 0) {
         document.getElementById('pedidosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>';
         return;
       }
-
-      let html = '<div class="pedidos-list">';
+      let html = '';
       pedidos.forEach(pedido => {
         const total = pedido.total?.toLocaleString() || '0';
         const estado = pedido.estado === 'pendiente' ? '⏳ Pendiente' : '✅ Pagado';
@@ -170,11 +244,10 @@
           </div>
         `;
       });
-      html += '</div>';
       document.getElementById('pedidosContainer').innerHTML = html;
     }
 
-    // ✅ Funciones globales
+    // ✅ FUNCIONES GLOBALES (igual)
     function seleccionarMesa(mesaId, mesaNumero) {
       currentMesaId = mesaId;
       document.querySelectorAll('.mesa-item').forEach(item => item.classList.remove('selected'));
@@ -225,31 +298,8 @@
         carrito = [];
         actualizarCarrito();
         alert('✅ Pedido creado exitosamente');
-      } catch (error) {
-        alert('❌ Error al crear pedido: ' + error.message);
-      }
-    }
-
-    async function crearPedido() {
-      if (!currentMesaId || carrito.length === 0) return alert('⚠️ Selecciona mesa y agrega artículos');
-      try {
-        const pedido = {
-          mesaId: currentMesaId,
-          meseroId: currentMesero.id,
-          meseroNombre: currentMesero.nombre,
-          items: carrito,
-          total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
-          estado: 'pendiente',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await db.collection(`tenants/${currentTenantId}/pedidos`).add(pedido);
-        carrito = [];
-        actualizarCarrito();
-        alert('✅ Pedido creado exitosamente');
-        
         // ✅ ACTUALIZAR LA LISTA DE PEDIDOS
         cargarPedidos(currentTenantId);
-        
       } catch (error) {
         alert('❌ Error al crear pedido: ' + error.message);
       }
@@ -280,7 +330,7 @@
       }
     }
 
-    // ✅ Cargar datos de Firestore
+    // ✅ CARGAR DATOS
     async function cargarMesas(tenantId) {
       try {
         const mesasSnapshot = await db.collection(`tenants/${tenantId}/mesas`).get();
@@ -303,122 +353,48 @@
       }
     }
 
-
     async function cargarPedidos(tenantId) {
       try {
         const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
-          .orderBy('createdAt', 'desc')
           .get();
-        
         const pedidos = [];
         pedidosSnapshot.forEach(doc => {
           pedidos.push({ id: doc.id, ...doc.data() });
         });
-        
+        // Ordenar cliente (más reciente primero)
+        pedidos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
         renderPedidos(pedidos);
       } catch (error) {
-        document.getElementById('pedidosContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error al cargar pedidos: ${error.message}</p>`;
+        console.error("Error al cargar pedidos:", error);
+        document.getElementById('pedidosContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error al cargar pedidos</p>`;
       }
     }
 
-    // ✅ Cargar contenido del cashier
-    function loadCashierContent() {
-      document.getElementById('contentArea').innerHTML = `
-        <div class="tab-content active" id="tab-mesas">
-          <div class="card">
-            <h2>🪑 Selección de Mesa</h2>
-            <p>Selecciona la mesa que deseas atender</p>
-            <div id="mesasContainer">
-              <p style="text-align: center; color: #6b7280;">Cargando mesas...</p>
-            </div>
-          </div>
-        </div>
-        <div class="tab-content" id="tab-menu">
-          <div class="card">
-            <h2>🍎 Menú de Bebidas</h2>
-            <div id="menuContainer">
-              <p style="text-align: center; color: #6b7280;">Cargando menú...</p>
-            </div>
-          </div>
-        </div>
-        <div class="tab-content" id="tab-carrito">
-          <div class="card">
-            <h2>🛒 Carrito de Pedidos</h2>
-            <div id="carritoContainer">
-              <p style="text-align: center; color: #6b7280;">Carrito vacío</p>
-            </div>
-          </div>
-        </div>
-        <div class="tab-content" id="tab-pedidos">
-          <div class="card">
-            <h2>📋 Pedidos Activos</h2>
-            <div id="pedidosContainer">
-              <p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>
-            </div>
-          </div>
-        </div>
-        <div class="tab-content" id="tab-pagos">
-          <div class="card">
-            <h2>💰 Registro de Pagos</h2>
-            <div id="pagosContainer">
-              <p style="text-align: center; color: #6b7280;">Listo para procesar pagos</p>
-            </div>
-          </div>
-        </div>
-        <div class="tab-content" id="tab-dj">
-          <div class="card">
-            <h2>🎵 Solicitar Canciones al DJ</h2>
-            <div class="form-group">
-              <label for="cancionInput">Nombre de la Canción *</label>
-              <input type="text" id="cancionInput" placeholder="Despacito" required>
-            </div>
-            <div class="form-group">
-              <label for="artistaInput">Artista (opcional)</label>
-              <input type="text" id="artistaInput" placeholder="Luis Fonsi">
-            </div>
-            <button class="submit-btn" onclick="solicitarCancion()" style="background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;">Enviar al DJ</button>
-            <div id="djContainer" style="margin-top: 20px;"><p style="text-align: center; color: #6b7280;">Listo para enviar peticiones</p></div>
-          </div>
-        </div>
-      `;
-
-      // Configurar tabs
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-          this.classList.add('active');
-          document.getElementById('tab-' + this.getAttribute('data-tab')).classList.add('active');
-        });
-      });
-
-      // Cargar datos
-      cargarMesas(currentTenantId);
-      cargarArticulos(currentTenantId);
-      cargarPedidos(currentTenantId);
-    }
-
-    // ✅ Inicialización
+    // ✅ INICIALIZACIÓN
     async function init() {
       try {
-        const data = getMeseroData();
-        if (!data || !data.meseroId || !data.tenantId) {
-          throw new Error('URL inválida. Acceda desde el panel de administración.');
+        const meseroId = getMeseroIdFromUrl();
+        if (!meseroId) {
+          throw new Error('URL inválida. Usa: ?mid=ID_DEL_MESERO');
         }
-
-        currentMesero = { id: data.meseroId, nombre: data.meseroNombre };
-        currentTenantId = data.tenantId;
-
+        document.getElementById('tenantInfo').textContent = 'Cargando mesero...';
+        const resultado = await encontrarTenantYMeseroPorId(meseroId);
+        currentTenantId = resultado.tenantId;
+        currentMesero = resultado.mesero;
         document.getElementById('meseroNombre').textContent = `Panel de ${currentMesero.nombre}`;
         document.getElementById('tenantInfo').textContent = `Tenant: ${currentTenantId.substring(0, 8)}...`;
-
-        loadCashierContent();
+        // Cargar todos los datos
+        await cargarMesas(currentTenantId);
+        await cargarArticulos(currentTenantId);
+        await cargarPedidos(currentTenantId);
       } catch (error) {
-        document.getElementById('contentArea').innerHTML = `
+        document.getElementById('meseroNombre').textContent = '❌ Acceso Denegado';
+        document.getElementById('tenantInfo').textContent = error.message;
+        document.querySelector('.tabs').style.display = 'none';
+        document.getElementById('tab-mesas').innerHTML = `
           <div class="card error">
-            <h2>❌ Acceso Denegado</h2>
-            <p>${error.message}</p>
+            <h2>${error.message}</h2>
             <button onclick="window.location.href='index.html'" 
                     style="margin-top: 20px; background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer;">
               Volver al Login
@@ -428,9 +404,91 @@
       }
     }
 
-    // Iniciar cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', init);
+    // Configurar tabs
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById('tab-' + tabId).classList.add('active');
+        });
+      });
+      // Iniciar app
+      init();
+    });
   </script>
 </body>
 </html>
 
+
+
+              <script>
+                              // ✅ NUEVA FUNCIÓN: Cargar pedidos para el admin
+async function cargarPedidosAdmin() {
+  if (!tenantId) return;
+  try {
+    const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`).get();
+    let total = 0;
+    let pendientes = 0;
+    let pagados = 0;
+    let totales = 0;
+    
+    pedidosSnapshot.forEach(doc => {
+      const pedido = doc.data();
+      totales++;
+      if (pedido.estado === 'pendiente') {
+        pendientes++;
+        total += pedido.total || 0;
+      } else if (pedido.estado === 'pagada') {
+        pagados++;
+      }
+    });
+    
+    // Actualizar el dashboard
+    document.getElementById('pedidosTotales').textContent = totales;
+    document.getElementById('pedidosPendientes').textContent = pendientes;
+    document.getElementById('pedidosPagados').textContent = pagados;
+    document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
+    
+    // Opcional: cargar lista de transacciones
+    const transaccionesList = document.getElementById('transaccionesList');
+    if (transaccionesList) {
+      let html = '';
+      // Aquí podrías cargar los últimos 10 pedidos como transacciones
+      const pedidosArray = [];
+      pedidosSnapshot.forEach(doc => pedidosArray.push({ id: doc.id, ...doc.data() }));
+      pedidosArray.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      const ultimos = pedidosArray.slice(0, 10);
+      if (ultimos.length === 0) {
+        transaccionesList.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 20px;">No hay transacciones</p>';
+      } else {
+        html = '<ul style="list-style: none; padding: 0;">';
+        ultimos.forEach(p => {
+          html += `<li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+            <strong>Pedido #${p.id.substring(0,6)}</strong> - $${(p.total || 0).toLocaleString()} - ${p.estado}
+          </li>`;
+        });
+        html += '</ul>';
+        transaccionesList.innerHTML = html;
+      }
+    }
+  } catch (error) {
+    console.error("Error al cargar pedidos del admin:", error);
+  }
+}
+
+// En la función cargarDatos(), AGREGA al final:
+async function cargarDatos() {
+  // ... código existente para mesas, meseros, artículos ...
+  
+  // ✅ AGREGAR ESTA LÍNEA
+  await cargarPedidosAdmin();
+}
+
+
+              </script>
+                        </body>
+                        </html>
+                    
