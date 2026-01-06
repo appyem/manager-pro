@@ -100,25 +100,12 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    // Importar Firebase - CORREGIDO: SIN ESPACIOS AL FINAL
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      doc, 
-      getDocs,
-      addDoc,
-      updateDoc,
-      query,
-      where,
-      orderBy,
-      serverTimestamp,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <!-- Firebase SDK (MODO COMPAT - igual que cashier.html) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-    // Configuración
+  <script>
+    // === CONFIGURACIÓN DE FIREBASE (IGUAL QUE EN LOS OTROS ARCHIVOS) ===
     const firebaseConfig = {
       apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
       authDomain: "manager-pro-ec292.firebaseapp.com",
@@ -127,47 +114,55 @@
       messagingSenderId: "1077289364014",
       appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
     };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     // Variables
     let currentTenantId = null;
     let cancionesReproducidas = new Set();
     let unsubscribePeticiones = null;
 
-    // Detectar tenant desde URL
-    function detectarTenant() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('tid');
+    // === EXTRAER DATOS DE LA URL (IGUAL QUE cashier.html) ===
+    function getDjData() {
+      const params = new URLSearchParams(window.location.search);
+      const dataParam = params.get('data');
+      if (!dataParam) return null;
+      
+      try {
+        const decoded = decodeURIComponent(dataParam);
+        const jsonStr = atob(decoded);
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        console.error('Error al decodificar datos del DJ:', e);
+        return null;
+      }
     }
 
-    // Inicializar DJ
+    // === INICIALIZAR PANEL DEL DJ ===
     async function initDJ() {
-      const tenantId = detectarTenant();
-      
-      if (!tenantId) {
-        document.getElementById('tenantInfo').textContent = '❌ Error: URL inválida. Use ?tid=...';
+      const data = getDjData();
+      if (!data || !data.tenantId) {
+        document.getElementById('tenantInfo').textContent = '❌ Error: URL inválida. Use el enlace del panel de administrador.';
         alert('Acceda al panel del DJ desde el panel de administrador.');
         return;
       }
       
-      currentTenantId = tenantId;
-      document.getElementById('tenantInfo').textContent = `Tenant: ${tenantId.substring(0, 8)}...`;
+      currentTenantId = data.tenantId;
+      document.getElementById('tenantInfo').textContent = `Tenant: ${currentTenantId.substring(0, 8)}...`;
       iniciarEscuchaPeticiones();
       cargarHistorial();
     }
 
-    // Escuchar peticiones en tiempo real
+    // === ESCUCHAR PETICIONES EN TIEMPO REAL ===
     function iniciarEscuchaPeticiones() {
       if (unsubscribePeticiones) {
         unsubscribePeticiones();
       }
       
-      const peticionesRef = collection(db, `tenants/${currentTenantId}/peticionesCancion`);
-      const q = query(peticionesRef, where('estado', '==', 'pendiente'), orderBy('createdAt', 'asc'));
+      const peticionesRef = db.collection(`tenants/${currentTenantId}/peticionesCancion`);
+      const q = peticionesRef.where('estado', '==', 'pendiente').orderBy('createdAt', 'asc');
       
-      unsubscribePeticiones = onSnapshot(q, (snapshot) => {
+      unsubscribePeticiones = q.onSnapshot((snapshot) => {
         const peticiones = [];
         snapshot.forEach(doc => {
           peticiones.push({ id: doc.id, ...doc.data() });
@@ -175,15 +170,15 @@
         renderPeticiones(peticiones);
       }, (error) => {
         console.error('Error en listener de peticiones:', error);
-        alert('Error al cargar peticiones: ' + error.message);
+        document.getElementById('peticionesContainer').innerHTML = 
+          `<p style="text-align: center; color: #ef4444; padding: 20px;">Error: ${error.message}</p>`;
       });
     }
 
-    // Renderizar peticiones
+    // === RENDERIZAR PETICIONES ===
     function renderPeticiones(peticiones) {
       const container = document.getElementById('peticionesContainer');
       const countElement = document.getElementById('pendientesCount');
-      
       countElement.textContent = peticiones.length;
       
       if (peticiones.length === 0) {
@@ -223,15 +218,14 @@
       container.innerHTML = html;
     }
 
-    // Marcar como reproducida
+    // === MARCAR COMO REPRODUCIDA ===
     window.marcarReproducida = async function(peticionId, cancion, artista) {
       if (!currentTenantId) return;
       
       try {
-        const peticionRef = doc(db, `tenants/${currentTenantId}/peticionesCancion`, peticionId);
-        await updateDoc(peticionRef, {
+        await db.collection(`tenants/${currentTenantId}/peticionesCancion`).doc(peticionId).update({
           estado: 'reproducida',
-          reproducidaAt: serverTimestamp()
+          reproducidaAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
         const key = artista ? `${cancion} - ${artista}` : cancion;
@@ -245,7 +239,7 @@
       }
     };
 
-    // Gestión del historial
+    // === GESTIÓN DEL HISTORIAL (localStorage) ===
     function cargarHistorial() {
       const saved = localStorage.getItem(`dj_historial_${currentTenantId}`);
       if (saved) {
@@ -264,7 +258,6 @@
     function renderHistorial() {
       const container = document.getElementById('historialContainer');
       const countElement = document.getElementById('reproducidasCount');
-      
       countElement.textContent = cancionesReproducidas.size;
       
       if (cancionesReproducidas.size === 0) {
@@ -285,7 +278,7 @@
       container.innerHTML = html;
     }
 
-    // Limpiar historial
+    // === LIMPIAR HISTORIAL ===
     document.getElementById('limpiarHistorial').addEventListener('click', function() {
       if (confirm('¿Estás seguro de limpiar el historial de canciones reproducidas?')) {
         cancionesReproducidas.clear();
@@ -295,10 +288,10 @@
       }
     });
 
-    // Iniciar
+    // === INICIAR ===
     initDJ();
 
-    // Limpiar listener al salir
+    // === LIMPIAR LISTENER AL SALIR ===
     window.addEventListener('beforeunload', () => {
       if (unsubscribePeticiones) {
         unsubscribePeticiones();
