@@ -313,7 +313,8 @@
     let currentMesaId = null;
     let currentMesaNumero = null;
     let pedidoActivo = null;
-    let carritoLocal = [];
+    // ✅ Almacena el carrito por cada mesa
+    const carritosPorMesa = {};
 
     // === FUNCIONES EXISTENTES SIN CAMBIOS ===
     function getMeseroData() {
@@ -378,10 +379,18 @@
       event.target.classList.add('active');
     }
 
-    // === FLUJO OPTIMIZADO ===
+    // === FLUJO CORREGIDO: Persistencia por mesa ===
     function seleccionarMesa(mesaId, mesaNumero) {
+      // Guardar el carrito actual si existe
+      if (currentMesaId) {
+        carritosPorMesa[currentMesaId] = carritoLocal;
+      }
+
       currentMesaId = mesaId;
       currentMesaNumero = mesaNumero;
+      // Restaurar el carrito de esta mesa o inicializar vacío
+      carritoLocal = carritosPorMesa[mesaId] || [];
+      
       document.getElementById('mesaNumero').textContent = mesaNumero;
       document.getElementById('view-mesas').style.display = 'none';
       document.getElementById('view-pedido').style.display = 'block';
@@ -393,17 +402,22 @@
     }
 
     function volverAMesas() {
+      // ✅ NO se limpia carritoLocal aquí
       document.getElementById('view-mesas').style.display = 'block';
       document.getElementById('view-pedido').style.display = 'none';
       document.getElementById('view-cierre').style.display = 'none';
       document.getElementById('btnVolver').style.display = 'none';
       document.getElementById('btnCierreCaja').style.display = 'inline-block';
-      carritoLocal = [];
     }
+
+    // Variable global para el carrito actual
+    let carritoLocal = [];
 
     async function cargarPedidoPendiente() {
       if (!currentMesaId || !currentTenantId) return;
+      
       try {
+        // Primero verificar si hay un pedido pendiente en Firestore
         const snapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
           .where('mesaId', '==', currentMesaId)
           .where('estado', '==', 'pendiente')
@@ -413,14 +427,19 @@
         if (!snapshot.empty) {
           const doc = snapshot.docs[0];
           pedidoActivo = { id: doc.id, ...doc.data() };
+          // Si hay un pedido en Firestore, usarlo (sobrescribe el local)
           carritoLocal = pedidoActivo.items || [];
+          carritosPorMesa[currentMesaId] = [...carritoLocal];
         } else {
-          pedidoActivo = null;
-          carritoLocal = [];
+          // Si no hay en Firestore, usar el carrito local guardado
+          carritoLocal = carritosPorMesa[currentMesaId] || [];
         }
         actualizarVistaPedido();
       } catch (error) {
         console.error("Error al cargar pedido pendiente:", error);
+        // En caso de error, usar el carrito local
+        carritoLocal = carritosPorMesa[currentMesaId] || [];
+        actualizarVistaPedido();
       }
     }
 
@@ -431,6 +450,8 @@
       } else {
         carritoLocal.push({ id: articuloId, nombre, precio, cantidad: 1 });
       }
+      // Guardar inmediatamente
+      carritosPorMesa[currentMesaId] = [...carritoLocal];
       actualizarVistaPedido();
     }
 
@@ -441,6 +462,7 @@
         if (item.cantidad <= 0) {
           carritoLocal = carritoLocal.filter(i => i.id !== articuloId);
         }
+        carritosPorMesa[currentMesaId] = [...carritoLocal];
         actualizarVistaPedido();
       }
     }
@@ -497,6 +519,11 @@
         }
 
         await db.collection(`tenants/${currentTenantId}/mesas`).doc(currentMesaId).update({ estado: 'pagada' });
+        
+        // ✅ Limpiar solo el carrito de esta mesa después del pago
+        delete carritosPorMesa[currentMesaId];
+        carritoLocal = [];
+        
         alert('✅ Pago procesado exitosamente');
         volverAMesas();
         cargarMesas(currentTenantId);
@@ -531,7 +558,7 @@
       }
     }
 
-    // === CIERRE DE CAJA ===
+    // === CIERRE DE CAJA SIN ÍNDICE ===
     function mostrarCierreCaja() {
       document.getElementById('view-mesas').style.display = 'none';
       document.getElementById('view-pedido').style.display = 'none';
@@ -548,9 +575,9 @@
         hoy.setHours(0, 0, 0, 0);
         const hoyTimestamp = firebase.firestore.Timestamp.fromDate(hoy);
         
+        // 🔥 Consulta sin .where('estado', '==', 'pagada') para evitar índice
         const pedidosSnapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
-          .where('estado', '==', 'pagada')
           .where('pagadoAt', '>=', hoyTimestamp)
           .get();
         
@@ -561,12 +588,15 @@
         
         pedidosSnapshot.forEach(doc => {
           const p = doc.data();
-          totalVendido += p.total || 0;
-          mesas.add(p.mesaId);
-          pedidosCount++;
-          (p.items || []).forEach(item => {
-            articulos[item.nombre] = (articulos[item.nombre] || 0) + item.cantidad;
-          });
+          // ✅ Filtrar en cliente
+          if (p.estado === 'pagada') {
+            totalVendido += p.total || 0;
+            mesas.add(p.mesaId);
+            pedidosCount++;
+            (p.items || []).forEach(item => {
+              articulos[item.nombre] = (articulos[item.nombre] || 0) + item.cantidad;
+            });
+          }
         });
         
         document.getElementById('totalVendido').textContent = totalVendido.toLocaleString();
@@ -574,7 +604,6 @@
         document.getElementById('pedidosPagados').textContent = pedidosCount;
         document.getElementById('articulosVendidos').textContent = Object.values(articulos).reduce((a,b) => a+b, 0);
         
-        // Top 5 artículos
         const topArticulos = Object.entries(articulos)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5);
