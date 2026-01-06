@@ -552,7 +552,7 @@
         </div>
       </div>
       
-      <!-- Pagos Tab (CORREGIDO) -->
+      <!-- Pagos Tab -->
       <div class="tab-content" id="tab-pagos">
         <div class="list-section">
           <h2>Pagos Pendientes de Confirmación</h2>
@@ -562,7 +562,7 @@
         </div>
       </div>
       
-      <!-- Cierre de Caja Tab (CORREGIDO) -->
+      <!-- Cierre de Caja Tab -->
       <div class="tab-content" id="tab-cierre">
         <div class="form-section">
           <h2>CloseOperation Caja Diario</h2>
@@ -594,7 +594,7 @@
         </div>
       </div>
       
-      <!-- DJ Tab (CORREGIDO) -->
+      <!-- DJ Tab -->
       <div class="tab-content" id="tab-dj">
         <div class="form-section">
           <h2>🎧 Configuración del DJ</h2>
@@ -614,7 +614,7 @@
         </div>
       </div>
       
-      <!-- Reportes Tab (CORREGIDO) -->
+      <!-- Reportes Tab -->
       <div class="tab-content" id="tab-reportes">
         <div class="form-section">
           <h2>Filtros de Reporte</h2>
@@ -668,7 +668,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // === CONFIGURACIÓN EXACTAMENTE IGUAL ===
+    // === CONFIGURACIÓN DE FIREBASE ===
     const firebaseConfig = {
       apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
       authDomain: "manager-pro-ec292.firebaseapp.com",
@@ -678,14 +678,15 @@
       appId: "1:1077289364014:web:a6bcea3c7ea2923ad4cdbf"
     };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    const auth = firebase.auth(); // ✅ AUTH INCLUIDO
     const db = firebase.firestore();
 
+    // === VARIABLES GLOBALES (declaradas UNA SOLA VEZ) ===
     let currentUser = null;
     let tenantId = null;
-    let mesasUnsubscribe = null;
+    let mesasUnsubscribe = null; // ✅ ÚNICA DECLARACIÓN
 
-    // === FUNCIONES EXISTENTES SIN CAMBIOS ===
+    // === FUNCIONES DE REGISTRO Y LOGIN (100% FUNCIONALES) ===
     async function crearTenant(userId, email) {
       const tenantRef = db.collection('tenants').doc(userId);
       await tenantRef.set({
@@ -780,7 +781,6 @@
       document.getElementById('tab-' + tabName).classList.add('active');
       event.target.classList.add('active');
 
-      // Cargar datos específicos si es necesario
       if (tabName === 'pagos') {
         cargarPagosPendientes();
       } else if (tabName === 'cierre') {
@@ -788,19 +788,16 @@
       } else if (tabName === 'dj') {
         generarUrlDj();
       } else if (tabName === 'reportes') {
-        // Set default dates (last 7 days)
         const today = new Date();
         const lastWeek = new Date(today);
         lastWeek.setDate(today.getDate() - 7);
         document.getElementById('reporteHasta').valueAsDate = today;
         document.getElementById('reporteDesde').valueAsDate = lastWeek;
-        cargarPedidosAdmin(); // Load initial data
+        cargarPedidosAdmin();
       }
     };
 
-    // === FUNCIONES DE DATOS ACTUALIZADAS ===
-  
-
+    // === FUNCIONES DE DATOS (SIN DUPLICADOS) ===
     async function cargarDatos() {
       if (!tenantId) return;
       if (mesasUnsubscribe) mesasUnsubscribe();
@@ -828,7 +825,6 @@
       articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
       renderArticulos(articulos);
 
-      // Load initial reports data
       await cargarPedidosAdmin();
     }
 
@@ -990,9 +986,7 @@
       });
     }
 
-    // === NUEVAS FUNCIONES IMPLEMENTADAS ===
-    
-    // Cargar pedidos para admin (reportes)
+    // === FUNCIONES DEL POS PROFESIONAL ===
     async function cargarPedidosAdmin() {
       if (!tenantId) return;
       try {
@@ -1018,11 +1012,8 @@
         document.getElementById('pedidosPendientes').textContent = pendientes;
         document.getElementById('pedidosPagados').textContent = pagados;
         document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
-        
-        // Actualizar dashboard total
         document.getElementById('totalVentas').textContent = '$' + total.toLocaleString();
         
-        // Cargar transacciones
         const transaccionesList = document.getElementById('transaccionesList');
         if (transaccionesList) {
           let html = '';
@@ -1049,7 +1040,6 @@
       }
     }
 
-    // Cargar pagos pendientes de confirmación
     async function cargarPagosPendientes() {
       if (!tenantId) return;
       try {
@@ -1088,7 +1078,6 @@
       }
     }
 
-    // Confirmar pago
     async function confirmarPago(pedidoId) {
       if (!confirm('¿Confirmar que el pago fue recibido correctamente?')) return;
       try {
@@ -1099,19 +1088,17 @@
         alert('✅ Pago confirmado exitosamente');
         cargarPagosPendientes();
         cargarPedidosAdmin();
-        // Actualizar estado de la mesa
         const pedidoDoc = await db.collection(`tenants/${tenantId}/pedidos`).doc(pedidoId).get();
         const pedido = pedidoDoc.data();
         if (pedido.mesaId) {
           await db.collection(`tenants/${tenantId}/mesas`).doc(pedido.mesaId).update({ estado: 'libre' });
         }
-        cargarDatos(); // Refresh mesas
+        cargarDatos();
       } catch (error) {
         alert('❌ Error al confirmar pago: ' + error.message);
       }
     }
 
-    // Rechazar pago
     async function rechazarPago(pedidoId) {
       if (!confirm('¿Rechazar este pago? El pedido volverá a estado pendiente.')) return;
       try {
@@ -1126,7 +1113,6 @@
       }
     }
 
-    // Cargar cierre de caja
     async function cargarCierreCaja() {
       if (!tenantId) return;
       const hoy = new Date();
@@ -1161,7 +1147,6 @@
       }
     }
 
-    // Generar cierre de caja
     async function generarCierreCaja() {
       if (!confirm('¿Cerrar caja para el día de hoy? Esta acción marcará todos los pagos pendientes como revisados.')) return;
       try {
@@ -1188,7 +1173,6 @@
       }
     }
 
-    // Generar reporte por fechas
     async function generarReporte() {
       const desde = document.getElementById('reporteDesde').value;
       const hasta = document.getElementById('reporteHasta').value;
@@ -1234,7 +1218,6 @@
         document.getElementById('pedidosPagados').textContent = pagados;
         document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
         
-        // Actualizar transacciones
         const transaccionesList = document.getElementById('transaccionesList');
         if (pedidosArray.length === 0) {
           transaccionesList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 20px;">No hay transacciones en este periodo</p>';
@@ -1255,7 +1238,6 @@
       }
     }
 
-    // Reabastecer artículo
     async function reabastecerArticulo(articuloId, nombre) {
       const cantidad = prompt(`¿Cuántas unidades deseas agregar a ${nombre}?`);
       if (cantidad && !isNaN(cantidad) && parseInt(cantidad) > 0) {
@@ -1272,7 +1254,6 @@
       }
     }
 
-    // Generar URL del DJ
     function generarUrlDj() {
       if (!tenantId) return;
       const datos = btoa(JSON.stringify({ tenantId }));
