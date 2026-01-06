@@ -44,6 +44,11 @@
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px; }
     .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; }
+    /* Pagos */
+    .pedido-pago-item { padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 16px; }
+    .pago-form { margin-top: 16px; }
+    .pago-btn { background: #059669; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 12px; width: 100%; }
+    .pago-btn:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
@@ -142,7 +147,7 @@
       document.getElementById('menuContainer').innerHTML = html;
     }
 
-    // ✅ Renderizar pedidos
+    // ✅ Renderizar pedidos (lectura)
     function renderPedidos(pedidos) {
       if (pedidos.length === 0) {
         document.getElementById('pedidosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>';
@@ -153,7 +158,7 @@
       pedidos.forEach(pedido => {
         const total = pedido.total?.toLocaleString() || '0';
         const estado = pedido.estado === 'pendiente' ? '⏳ Pendiente' : '✅ Pagado';
-        const mesaNumero = pedido.mesaNumero || pedido.mesaId;
+        const mesaNumero = pedido.mesaNumero || 'Desconocida';
         html += `
           <div class="card" style="margin-bottom: 16px;">
             <h3>Pedido #${pedido.id.substring(0, 6)}</h3>
@@ -173,6 +178,69 @@
       });
       html += '</div>';
       document.getElementById('pedidosContainer').innerHTML = html;
+    }
+
+    // ✅ Renderizar pedidos para PAGAR (solo pendientes)
+    function renderPedidosParaPagar(pedidos) {
+      const pendientes = pedidos.filter(p => p.estado === 'pendiente');
+      if (pendientes.length === 0) {
+        document.getElementById('pagosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">No hay pedidos pendientes para pagar</p>';
+        return;
+      }
+
+      let html = '';
+      pendientes.forEach(pedido => {
+        const total = pedido.total?.toLocaleString() || '0';
+        const mesaNumero = pedido.mesaNumero || 'Desconocida';
+        html += `
+          <div class="pedido-pago-item">
+            <h4>Pedido #${pedido.id.substring(0, 6)} - Mesa ${mesaNumero}</h4>
+            <p><strong>Total:</strong> $${total}</p>
+            <div class="pago-form">
+              <div class="form-group">
+                <label>Forma de Pago</label>
+                <select id="formaPago-${pedido.id}" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 6px;">
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta">Tarjeta</option>
+                  <option value="nequi">Nequi</option>
+                </select>
+              </div>
+              <button class="pago-btn" onclick="procesarPago('${pedido.id}', '${pedido.mesaId}')">✅ Procesar Pago</button>
+            </div>
+          </div>
+        `;
+      });
+      document.getElementById('pagosContainer').innerHTML = html;
+    }
+
+    // ✅ Procesar pago
+    async function procesarPago(pedidoId, mesaId) {
+      const formaPago = document.getElementById(`formaPago-${pedidoId}`).value;
+      if (!formaPago) return alert('⚠️ Selecciona forma de pago');
+
+      try {
+        // Actualizar estado del pedido
+        await db.collection(`tenants/${currentTenantId}/pedidos`).doc(pedidoId).update({
+          estado: 'pagada',
+          formaPago: formaPago,
+          pagadoAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Actualizar estado de la mesa
+        await db.collection(`tenants/${currentTenantId}/mesas`).doc(mesaId).update({
+          estado: 'pagada'
+        });
+
+        alert('✅ Pago procesado exitosamente');
+        
+        // Recargar ambas pestañas
+        cargarPedidos(currentTenantId);
+        if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'pagos') {
+          cargarPedidosParaPago();
+        }
+      } catch (error) {
+        alert('❌ Error al procesar pago: ' + error.message);
+      }
     }
 
     // ✅ Funciones globales
@@ -221,6 +289,11 @@
           if (doc.id === currentMesaId) {
             mesaNumero = doc.data().numero;
           }
+        });
+
+        // Marcar mesa como pendiente
+        await db.collection(`tenants/${currentTenantId}/mesas`).doc(currentMesaId).update({
+          estado: 'pendiente'
         });
 
         const pedido = {
@@ -293,7 +366,7 @@
       }
     }
 
-    // ✅ CORREGIDO: sin orderBy() para evitar necesidad de índice compuesto
+    // ✅ Cargar pedidos (para pestaña "Pedidos")
     async function cargarPedidos(tenantId) {
       if (!currentMesero?.id) {
         console.warn("No se puede cargar pedidos: mesero no definido");
@@ -301,7 +374,6 @@
         return;
       }
       try {
-        // 🔥 REMOVEMOS orderBy() para evitar error de índice
         const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
           .get();
@@ -311,17 +383,45 @@
           pedidos.push({ id: doc.id, ...doc.data() });
         });
 
-        // 🔥 Ordenamos manualmente en JavaScript (cliente)
         pedidos.sort((a, b) => {
           const aTime = a.createdAt?.seconds || 0;
           const bTime = b.createdAt?.seconds || 0;
-          return bTime - aTime; // descendente
+          return bTime - aTime;
         });
         
         renderPedidos(pedidos);
       } catch (error) {
         console.error("Error al cargar pedidos:", error);
         document.getElementById('pedidosContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error al cargar pedidos: ${error.message}</p>`;
+      }
+    }
+
+    // ✅ Cargar pedidos para la pestaña "Pagos"
+    async function cargarPedidosParaPago() {
+      if (!currentMesero?.id) {
+        document.getElementById('pagosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">Acceso no autorizado</p>';
+        return;
+      }
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
+          .where('meseroId', '==', currentMesero.id)
+          .get();
+        
+        const pedidos = [];
+        pedidosSnapshot.forEach(doc => {
+          pedidos.push({ id: doc.id, ...doc.data() });
+        });
+
+        pedidos.sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime;
+        });
+        
+        renderPedidosParaPagar(pedidos);
+      } catch (error) {
+        console.error("Error al cargar pedidos para pago:", error);
+        document.getElementById('pagosContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error: ${error.message}</p>`;
       }
     }
 
@@ -365,7 +465,7 @@
           <div class="card">
             <h2>💰 Registro de Pagos</h2>
             <div id="pagosContainer">
-              <p style="text-align: center; color: #6b7280;">Listo para procesar pagos</p>
+              <p style="text-align: center; color: #6b7280;">Cargando pedidos pendientes...</p>
             </div>
           </div>
         </div>
@@ -386,7 +486,7 @@
         </div>
       `;
 
-      // Configurar tabs con recarga automática de pedidos
+      // Configurar tabs
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -395,9 +495,10 @@
           const tabId = 'tab-' + this.getAttribute('data-tab');
           document.getElementById(tabId).classList.add('active');
 
-          // ✅ Recargar pedidos al entrar a la pestaña
           if (this.getAttribute('data-tab') === 'pedidos') {
             cargarPedidos(currentTenantId);
+          } else if (this.getAttribute('data-tab') === 'pagos') {
+            cargarPedidosParaPago();
           }
         });
       });
