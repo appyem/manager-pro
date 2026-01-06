@@ -1,19 +1,4 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -144,7 +129,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (CORREGIDO: sin espacios) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -165,13 +150,13 @@
     let currentMesaId = null;
     let carrito = [];
 
-    // ✅ EXTRAER DATOS DE LA URL (USA ?mid=... DIRECTAMENTE)
+    // ✅ EXTRAER EL ID DEL MESERO DE LA URL
     function getMeseroIdFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return params.get('mid');
     }
 
-    // ✅ ENCONTRAR MESERO POR ID (BUSCA EN TODOS LOS TENANTS)
+    // ✅ ENCONTRAR MESERO POR ID EN CUALQUIER TENANT
     async function encontrarTenantYMeseroPorId(meseroId) {
       const tenantsSnapshot = await db.collection('tenants').get();
       for (const tenantDoc of tenantsSnapshot.docs) {
@@ -187,7 +172,7 @@
       throw new Error('Mesero no encontrado');
     }
 
-    // ✅ FUNCIONES DE RENDER (igual que antes)
+    // ✅ FUNCIONES DE RENDER
     function renderMesas(mesas) {
       const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
       let html = '';
@@ -236,9 +221,7 @@
             <div style="margin-top: 12px;">
               <h4>Artículos:</h4>
               <ul style="list-style: none; padding-left: 0;">
-                ${pedido.items?.map(item => 
-                  `<li>• ${item.nombre} x${item.cantidad}</li>`
-                ).join('') || '<li>Sin artículos</li>'}
+                ${pedido.items?.map(item => `<li>• ${item.nombre} x${item.cantidad}</li>`).join('') || '<li>Sin artículos</li>'}
               </ul>
             </div>
           </div>
@@ -247,7 +230,7 @@
       document.getElementById('pedidosContainer').innerHTML = html;
     }
 
-    // ✅ FUNCIONES GLOBALES (igual)
+    // ✅ FUNCIONES GLOBALES
     function seleccionarMesa(mesaId, mesaNumero) {
       currentMesaId = mesaId;
       document.querySelectorAll('.mesa-item').forEach(item => item.classList.remove('selected'));
@@ -298,7 +281,6 @@
         carrito = [];
         actualizarCarrito();
         alert('✅ Pedido creado exitosamente');
-        // ✅ ACTUALIZAR LA LISTA DE PEDIDOS
         cargarPedidos(currentTenantId);
       } catch (error) {
         alert('❌ Error al crear pedido: ' + error.message);
@@ -362,7 +344,6 @@
         pedidosSnapshot.forEach(doc => {
           pedidos.push({ id: doc.id, ...doc.data() });
         });
-        // Ordenar cliente (más reciente primero)
         pedidos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
         renderPedidos(pedidos);
       } catch (error) {
@@ -384,7 +365,6 @@
         currentMesero = resultado.mesero;
         document.getElementById('meseroNombre').textContent = `Panel de ${currentMesero.nombre}`;
         document.getElementById('tenantInfo').textContent = `Tenant: ${currentTenantId.substring(0, 8)}...`;
-        // Cargar todos los datos
         await cargarMesas(currentTenantId);
         await cargarArticulos(currentTenantId);
         await cargarPedidos(currentTenantId);
@@ -404,7 +384,7 @@
       }
     }
 
-    // Configurar tabs
+    // Configurar tabs e iniciar
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -415,80 +395,9 @@
           document.getElementById('tab-' + tabId).classList.add('active');
         });
       });
-      // Iniciar app
       init();
     });
   </script>
 </body>
 </html>
 
-
-
-              <script>
-                              // ✅ NUEVA FUNCIÓN: Cargar pedidos para el admin
-async function cargarPedidosAdmin() {
-  if (!tenantId) return;
-  try {
-    const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`).get();
-    let total = 0;
-    let pendientes = 0;
-    let pagados = 0;
-    let totales = 0;
-    
-    pedidosSnapshot.forEach(doc => {
-      const pedido = doc.data();
-      totales++;
-      if (pedido.estado === 'pendiente') {
-        pendientes++;
-        total += pedido.total || 0;
-      } else if (pedido.estado === 'pagada') {
-        pagados++;
-      }
-    });
-    
-    // Actualizar el dashboard
-    document.getElementById('pedidosTotales').textContent = totales;
-    document.getElementById('pedidosPendientes').textContent = pendientes;
-    document.getElementById('pedidosPagados').textContent = pagados;
-    document.getElementById('ventasTotales').textContent = '$' + total.toLocaleString();
-    
-    // Opcional: cargar lista de transacciones
-    const transaccionesList = document.getElementById('transaccionesList');
-    if (transaccionesList) {
-      let html = '';
-      // Aquí podrías cargar los últimos 10 pedidos como transacciones
-      const pedidosArray = [];
-      pedidosSnapshot.forEach(doc => pedidosArray.push({ id: doc.id, ...doc.data() }));
-      pedidosArray.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-      const ultimos = pedidosArray.slice(0, 10);
-      if (ultimos.length === 0) {
-        transaccionesList.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 20px;">No hay transacciones</p>';
-      } else {
-        html = '<ul style="list-style: none; padding: 0;">';
-        ultimos.forEach(p => {
-          html += `<li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-            <strong>Pedido #${p.id.substring(0,6)}</strong> - $${(p.total || 0).toLocaleString()} - ${p.estado}
-          </li>`;
-        });
-        html += '</ul>';
-        transaccionesList.innerHTML = html;
-      }
-    }
-  } catch (error) {
-    console.error("Error al cargar pedidos del admin:", error);
-  }
-}
-
-// En la función cargarDatos(), AGREGA al final:
-async function cargarDatos() {
-  // ... código existente para mesas, meseros, artículos ...
-  
-  // ✅ AGREGAR ESTA LÍNEA
-  await cargarPedidosAdmin();
-}
-
-
-              </script>
-                        </body>
-                        </html>
-                    
