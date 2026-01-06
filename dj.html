@@ -100,12 +100,12 @@
     </div>
   </div>
 
-  <!-- Firebase SDK (MODO COMPAT - igual que cashier.html) -->
+  <!-- Firebase SDK (modo compat - igual que cashier.html) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // === CONFIGURACIÓN DE FIREBASE (IGUAL QUE EN LOS OTROS ARCHIVOS) ===
+    // === CONFIGURACIÓN DE FIREBASE ===
     const firebaseConfig = {
       apiKey: "AIzaSyCYuZRqdrR4ZcQ97T6lU8vIqFw58cSM4hA",
       authDomain: "manager-pro-ec292.firebaseapp.com",
@@ -122,7 +122,7 @@
     let cancionesReproducidas = new Set();
     let unsubscribePeticiones = null;
 
-    // === EXTRAER DATOS DE LA URL (IGUAL QUE cashier.html) ===
+    // === EXTRAER DATOS DE LA URL (mismo método que cashier.html) ===
     function getDjData() {
       const params = new URLSearchParams(window.location.search);
       const dataParam = params.get('data');
@@ -138,12 +138,12 @@
       }
     }
 
-    // === INICIALIZAR PANEL DEL DJ ===
+    // === INICIAR PANEL DEL DJ ===
     async function initDJ() {
       const data = getDjData();
       if (!data || !data.tenantId) {
         document.getElementById('tenantInfo').textContent = '❌ Error: URL inválida. Use el enlace del panel de administrador.';
-        alert('Acceda al panel del DJ desde el panel de administrador.');
+        alert('Acceda al panel del DJ desde el panel de administración.');
         return;
       }
       
@@ -153,20 +153,29 @@
       cargarHistorial();
     }
 
-    // === ESCUCHAR PETICIONES EN TIEMPO REAL ===
+    // === ESCUCHAR PETICIONES SIN ÍNDICE ===
     function iniciarEscuchaPeticiones() {
       if (unsubscribePeticiones) {
         unsubscribePeticiones();
       }
       
+      // 🔥 Consulta SIN orderBy (evita necesidad de índice)
       const peticionesRef = db.collection(`tenants/${currentTenantId}/peticionesCancion`);
-      const q = peticionesRef.where('estado', '==', 'pendiente').orderBy('createdAt', 'asc');
+      const q = peticionesRef.where('estado', '==', 'pendiente');
       
       unsubscribePeticiones = q.onSnapshot((snapshot) => {
         const peticiones = [];
         snapshot.forEach(doc => {
           peticiones.push({ id: doc.id, ...doc.data() });
         });
+        
+        // 🔥 Ordenar manualmente en JavaScript (más antiguo primero)
+        peticiones.sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return aTime - bTime;
+        });
+        
         renderPeticiones(peticiones);
       }, (error) => {
         console.error('Error en listener de peticiones:', error);
