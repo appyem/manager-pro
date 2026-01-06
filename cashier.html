@@ -71,7 +71,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK (CORREGIDO: sin espacios) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -142,7 +142,7 @@
       document.getElementById('menuContainer').innerHTML = html;
     }
 
-    /// ✅ Renderizar pedidos
+    // ✅ Renderizar pedidos
     function renderPedidos(pedidos) {
       if (pedidos.length === 0) {
         document.getElementById('pedidosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>';
@@ -153,10 +153,11 @@
       pedidos.forEach(pedido => {
         const total = pedido.total?.toLocaleString() || '0';
         const estado = pedido.estado === 'pendiente' ? '⏳ Pendiente' : '✅ Pagado';
+        const mesaNumero = pedido.mesaNumero || pedido.mesaId;
         html += `
           <div class="card" style="margin-bottom: 16px;">
             <h3>Pedido #${pedido.id.substring(0, 6)}</h3>
-            <p><strong>Mesa:</strong> ${pedido.mesaId}</p>
+            <p><strong>Mesa:</strong> ${mesaNumero}</p>
             <p><strong>Estado:</strong> ${estado}</p>
             <p><strong>Total:</strong> $${total}</p>
             <div style="margin-top: 12px;">
@@ -209,32 +210,22 @@
       document.getElementById('carritoContainer').innerHTML = html;
     }
 
+    // ✅ FUNCIÓN ÚNICA crearPedido (corregida duplicación)
     async function crearPedido() {
       if (!currentMesaId || carrito.length === 0) return alert('⚠️ Selecciona mesa y agrega artículos');
       try {
-        const pedido = {
-          mesaId: currentMesaId,
-          meseroId: currentMesero.id,
-          meseroNombre: currentMesero.nombre,
-          items: carrito,
-          total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
-          estado: 'pendiente',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await db.collection(`tenants/${currentTenantId}/pedidos`).add(pedido);
-        carrito = [];
-        actualizarCarrito();
-        alert('✅ Pedido creado exitosamente');
-      } catch (error) {
-        alert('❌ Error al crear pedido: ' + error.message);
-      }
-    }
+        // Buscar número de mesa
+        let mesaNumero = 'Desconocida';
+        const mesasSnapshot = await db.collection(`tenants/${currentTenantId}/mesas`).get();
+        mesasSnapshot.forEach(doc => {
+          if (doc.id === currentMesaId) {
+            mesaNumero = doc.data().numero;
+          }
+        });
 
-    async function crearPedido() {
-      if (!currentMesaId || carrito.length === 0) return alert('⚠️ Selecciona mesa y agrega artículos');
-      try {
         const pedido = {
           mesaId: currentMesaId,
+          mesaNumero: mesaNumero,
           meseroId: currentMesero.id,
           meseroNombre: currentMesero.nombre,
           items: carrito,
@@ -247,9 +238,8 @@
         actualizarCarrito();
         alert('✅ Pedido creado exitosamente');
         
-        // ✅ ACTUALIZAR LA LISTA DE PEDIDOS
+        // ✅ Actualizar pedidos inmediatamente
         cargarPedidos(currentTenantId);
-        
       } catch (error) {
         alert('❌ Error al crear pedido: ' + error.message);
       }
@@ -303,8 +293,12 @@
       }
     }
 
-
     async function cargarPedidos(tenantId) {
+      if (!currentMesero?.id) {
+        console.warn("No se puede cargar pedidos: mesero no definido");
+        document.getElementById('pedidosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>';
+        return;
+      }
       try {
         const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
@@ -354,7 +348,7 @@
           <div class="card">
             <h2>📋 Pedidos Activos</h2>
             <div id="pedidosContainer">
-              <p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>
+              <p style="text-align: center; color: #6b7280;">Cargando pedidos...</p>
             </div>
           </div>
         </div>
@@ -383,17 +377,23 @@
         </div>
       `;
 
-      // Configurar tabs
+      // Configurar tabs con recarga automática de pedidos
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
           this.classList.add('active');
-          document.getElementById('tab-' + this.getAttribute('data-tab')).classList.add('active');
+          const tabId = 'tab-' + this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+
+          // ✅ Recargar pedidos al entrar a la pestaña
+          if (this.getAttribute('data-tab') === 'pedidos') {
+            cargarPedidos(currentTenantId);
+          }
         });
       });
 
-      // Cargar datos
+      // Cargar datos iniciales
       cargarMesas(currentTenantId);
       cargarArticulos(currentTenantId);
       cargarPedidos(currentTenantId);
@@ -433,4 +433,5 @@
   </script>
 </body>
 </html>
+
 
