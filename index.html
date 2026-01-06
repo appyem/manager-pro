@@ -547,10 +547,8 @@
     };
 
     window.cerrarSesion = async function() {
-      // 🔥 LIMPIAR LOS LISTENERS
+      // 🔥 Limpiar el listener
       if (mesasUnsubscribe) mesasUnsubscribe();
-      if (meserosUnsubscribe) meserosUnsubscribe();
-      if (articulosUnsubscribe) articulosUnsubscribe();
       
       await auth.signOut();
       currentUser = null;
@@ -627,50 +625,42 @@
     }
 
     // Funciones de datos
-    // Variables para los listeners (para poder limpiarlos)
-let mesasUnsubscribe = null;
-let meserosUnsubscribe = null;
-let articulosUnsubscribe = null;
+    // 🔥 Variable global para el listener de mesas
+    let mesasUnsubscribe = null;
 
-async function cargarDatos() {
-  if (!tenantId) return;
+    async function cargarDatos() {
+      if (!tenantId) return;
 
-  // 🔥 LIMPIAR LISTENERS ANTERIORES
-  if (mesasUnsubscribe) mesasUnsubscribe();
-  if (meserosUnsubscribe) meserosUnsubscribe();
-  if (articulosUnsubscribe) articulosUnsubscribe();
+      // 🔥 Limpiar listener anterior
+      if (mesasUnsubscribe) mesasUnsubscribe();
 
-  // 🔥 ESCUCHAR MESAS EN TIEMPO REAL
-  const mesasRef = db.collection(`tenants/${tenantId}/mesas`);
-  mesasUnsubscribe = mesasRef.onSnapshot((snapshot) => {
-    const mesas = [];
-    snapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
-    
-    // Actualizar el dashboard
-    actualizarDashboard(mesas);
-    
-    // Actualizar la lista de mesas en la pestaña correspondiente
-    renderMesas(mesas);
-  }, (error) => {
-    console.error("Error al escuchar mesas:", error);
-    alert('❌ Error al cargar mesas: ' + error.message);
-  });
+      // 🔥 Escuchar cambios en tiempo real
+      const mesasRef = db.collection(`tenants/${tenantId}/mesas`);
+      mesasUnsubscribe = mesasRef.onSnapshot((snapshot) => {
+        const mesas = [];
+        snapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
+        
+        // ✅ Actualizar el dashboard INMEDIATAMENTE
+        actualizarDashboard(mesas);
+        
+        // ✅ Actualizar la lista de mesas en la pestaña "Mesas"
+        renderMesas(mesas);
+      }, (error) => {
+        console.error("Error al escuchar mesas:", error);
+        alert('❌ Error al cargar mesas: ' + error.message);
+      });
 
-  // Cargar meseros (estático, ya que rara vez cambian)
-  const meserosSnapshot = await db.collection(`tenants/${tenantId}/meseros`).get();
-  const meseros = [];
-  meserosSnapshot.forEach(doc => meseros.push({ id: doc.id, ...doc.data() }));
-  renderMeseros(meseros);
+      // Cargar otros datos que no cambian frecuentemente (estáticos)
+      const meserosSnapshot = await db.collection(`tenants/${tenantId}/meseros`).get();
+      const meseros = [];
+      meserosSnapshot.forEach(doc => meseros.push({ id: doc.id, ...doc.data() }));
+      renderMeseros(meseros);
 
-  // Cargar artículos (estático)
-  const articulosSnapshot = await db.collection(`tenants/${tenantId}/articulos`).get();
-  const articulos = [];
-  articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
-  renderArticulos(articulos);
-
-  // Cargar pedidos para el reporte
-  await cargarPedidosAdmin();
-}
+      const articulosSnapshot = await db.collection(`tenants/${tenantId}/articulos`).get();
+      const articulos = [];
+      articulosSnapshot.forEach(doc => articulos.push({ id: doc.id, ...doc.data() }));
+      renderArticulos(articulos);
+    }
 
     async function crearMeseroFirebase(nombre, telefono) {
       if (!tenantId) return;
