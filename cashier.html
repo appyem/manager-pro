@@ -142,6 +142,38 @@
       document.getElementById('menuContainer').innerHTML = html;
     }
 
+    /// ✅ Renderizar pedidos
+    function renderPedidos(pedidos) {
+      if (pedidos.length === 0) {
+        document.getElementById('pedidosContainer').innerHTML = '<p style="text-align: center; color: #6b7280;">No hay pedidos activos</p>';
+        return;
+      }
+
+      let html = '<div class="pedidos-list">';
+      pedidos.forEach(pedido => {
+        const total = pedido.total?.toLocaleString() || '0';
+        const estado = pedido.estado === 'pendiente' ? '⏳ Pendiente' : '✅ Pagado';
+        html += `
+          <div class="card" style="margin-bottom: 16px;">
+            <h3>Pedido #${pedido.id.substring(0, 6)}</h3>
+            <p><strong>Mesa:</strong> ${pedido.mesaId}</p>
+            <p><strong>Estado:</strong> ${estado}</p>
+            <p><strong>Total:</strong> $${total}</p>
+            <div style="margin-top: 12px;">
+              <h4>Artículos:</h4>
+              <ul style="list-style: none; padding-left: 0;">
+                ${pedido.items?.map(item => 
+                  `<li>• ${item.nombre} x${item.cantidad}</li>`
+                ).join('') || '<li>Sin artículos</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      document.getElementById('pedidosContainer').innerHTML = html;
+    }
+
     // ✅ Funciones globales
     function seleccionarMesa(mesaId, mesaNumero) {
       currentMesaId = mesaId;
@@ -198,6 +230,31 @@
       }
     }
 
+    async function crearPedido() {
+      if (!currentMesaId || carrito.length === 0) return alert('⚠️ Selecciona mesa y agrega artículos');
+      try {
+        const pedido = {
+          mesaId: currentMesaId,
+          meseroId: currentMesero.id,
+          meseroNombre: currentMesero.nombre,
+          items: carrito,
+          total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
+          estado: 'pendiente',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        await db.collection(`tenants/${currentTenantId}/pedidos`).add(pedido);
+        carrito = [];
+        actualizarCarrito();
+        alert('✅ Pedido creado exitosamente');
+        
+        // ✅ ACTUALIZAR LA LISTA DE PEDIDOS
+        cargarPedidos(currentTenantId);
+        
+      } catch (error) {
+        alert('❌ Error al crear pedido: ' + error.message);
+      }
+    }
+
     async function solicitarCancion() {
       const cancion = document.getElementById('cancionInput').value;
       const artista = document.getElementById('artistaInput').value;
@@ -243,6 +300,25 @@
         renderMenu(articulos);
       } catch (error) {
         document.getElementById('menuContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error: ${error.message}</p>`;
+      }
+    }
+
+
+    async function cargarPedidos(tenantId) {
+      try {
+        const pedidosSnapshot = await db.collection(`tenants/${tenantId}/pedidos`)
+          .where('meseroId', '==', currentMesero.id)
+          .orderBy('createdAt', 'desc')
+          .get();
+        
+        const pedidos = [];
+        pedidosSnapshot.forEach(doc => {
+          pedidos.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderPedidos(pedidos);
+      } catch (error) {
+        document.getElementById('pedidosContainer').innerHTML = `<p style="text-align: center; color: #ef4444;">Error al cargar pedidos: ${error.message}</p>`;
       }
     }
 
@@ -320,6 +396,7 @@
       // Cargar datos
       cargarMesas(currentTenantId);
       cargarArticulos(currentTenantId);
+      cargarPedidos(currentTenantId);
     }
 
     // ✅ Inicialización
