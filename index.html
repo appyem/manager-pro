@@ -842,7 +842,6 @@ body { background: #121826; color: #f1f5f9; min-height: 100vh; padding: 16px; li
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('tab-' + tabName).classList.add('active');
       event.target.classList.add('active');
-
       if (tabName === 'pagos') {
         cargarPagosPendientes();
       } else if (tabName === 'cierre') {
@@ -856,6 +855,18 @@ body { background: #121826; color: #f1f5f9; min-height: 100vh; padding: 16px; li
         document.getElementById('reporteHasta').valueAsDate = today;
         document.getElementById('reporteDesde').valueAsDate = lastWeek;
         cargarPedidosAdmin();
+      } else if (tabName === 'mesas') {
+        // ✅ FORZAR CARGA DE MESAS AL ENTRAR A LA PESTAÑA
+        if (tenantId) {
+          db.collection(`tenants/${tenantId}/mesas`).get().then(snapshot => {
+            const mesas = [];
+            snapshot.forEach(doc => mesas.push({ id: doc.id, ...doc.data() }));
+            renderMesas(mesas);
+          }).catch(error => {
+            console.error("Error al cargar mesas:", error);
+            document.getElementById('mesasList').innerHTML = `<p style="text-align: center; color: #ef4444;">Error: ${error.message}</p>`;
+          });
+        }
       }
     };
 
