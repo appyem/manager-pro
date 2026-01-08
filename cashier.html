@@ -234,6 +234,10 @@
         <div class="mesa-title">Mesa <span id="mesaNumero">?</span></div>
         <div>Estado: <span id="mesaEstado" class="mesa-estado pendiente">Pendiente</span></div>
       </div>
+
+      <button id="btnRealizarPedido" class="btn btn-secondary" style="margin-bottom:12px; width:100%;" onclick="realizarPedido()">
+        📤 Realizar Pedido
+      </button>
       
       <div class="pedido-layout">
         <!-- Menú + DJ -->
@@ -429,6 +433,63 @@
       document.getElementById('btnCierreCaja').style.display = 'inline-block';
     }
 
+
+    async function realizarPedido() {
+      if (carritoLocal.length === 0) return alert('⚠️ No hay artículos para realizar el pedido');
+      if (!currentMesaId || !currentTenantId || !currentMesero) return;
+
+      try {
+        // Verificar si ya existe un pedido pendiente
+        const snapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
+          .where('mesaId', '==', currentMesaId)
+          .where('estado', '==', 'pendiente')
+          .limit(1)
+          .get();
+
+        let docRef;
+        if (snapshot.empty) {
+          // Crear nuevo pedido
+          const pedidoData = {
+            mesaId: currentMesaId,
+            mesaNumero: currentMesaNumero,
+            meseroId: currentMesero.id,
+            meseroNombre: currentMesero.nombre,
+            items: [...carritoLocal],
+            total: carritoLocal.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
+            estado: 'pendiente',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          docRef = await db.collection(`tenants/${currentTenantId}/pedidos`).add(pedidoData);
+        } else {
+          // Actualizar pedido existente
+          const doc = snapshot.docs[0];
+          docRef = doc.ref;
+          await docRef.update({
+            items: [...carritoLocal],
+            total: carritoLocal.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
+            estado: 'pendiente'
+          });
+        }
+
+        // Actualizar estado de la mesa a 'pendiente'
+        await db.collection(`tenants/${currentTenantId}/mesas`).doc(currentMesaId).update({ estado: 'pendiente' });
+        
+        // Guardar referencia
+        pedidoActivo = { id: docRef.id, ...carritoLocal };
+        carritosPorMesa[currentMesaId] = [...carritoLocal];
+
+        alert('✅ Pedido realizado. La mesa está ahora en estado "Pendiente"');
+        
+        // Opcional: deshabilitar el botón de "Realizar Pedido" si ya se hizo
+        document.getElementById('btnRealizarPedido').disabled = true;
+        
+      } catch (error) {
+        console.error("Error al realizar pedido:", error);
+        alert('❌ Error al realizar el pedido: ' + error.message);
+      }
+    }
+
+
     async function cargarPedidoPendiente() {
       if (!currentMesaId || !currentTenantId) return;
       try {
@@ -503,30 +564,41 @@
     async function procesarPagoActual() {
       if (carritoLocal.length === 0) return alert('⚠️ No hay artículos para pagar');
       const formaPago = document.getElementById('formaPago').value;
+      
       try {
         const total = carritoLocal.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+        
         let pedidoData = {
-          mesaId: currentMesaId,
-          mesaNumero: currentMesaNumero,
-          meseroId: currentMesero.id,
-          meseroNombre: currentMesero.nombre,
           items: carritoLocal,
           total: total,
           estado: 'pagada',
           formaPago: formaPago,
           pagadoAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
         if (pedidoActivo) {
+          // Actualizar pedido existente
           await db.collection(`tenants/${currentTenantId}/pedidos`).doc(pedidoActivo.id).update(pedidoData);
         } else {
-          pedidoData.estado = 'pendiente';
+          // Crear nuevo pedido directamente pagado (caso raro)
+          pedidoData = {
+            mesaId: currentMesaId,
+            mesaNumero: currentMesaNumero,
+            meseroId: currentMesero.id,
+            meseroNombre: currentMesero.nombre,
+            ...pedidoData,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
           const docRef = await db.collection(`tenants/${currentTenantId}/pedidos`).add(pedidoData);
-          await db.collection(`tenants/${currentTenantId}/pedidos`).doc(docRef.id).update({ estado: 'pagada' });
+          pedidoActivo = { id: docRef.id, ...carritoLocal };
         }
-        await db.collection(`tenants/${currentTenantId}/mesas`).doc(currentMesaId).update({ estado: 'pagada' });
+
+        // ❌ NO actualizamos la mesa aquí
+        // El admin la pondrá en 'libre' al confirmar
+
         delete carritosPorMesa[currentMesaId];
         carritoLocal = [];
-        alert('✅ Pago procesado exitosamente');
+        alert('✅ Pago procesado. Esperando confirmación del administrador.');
         volverAMesas();
         cargarMesas(currentTenantId);
       } catch (error) {
