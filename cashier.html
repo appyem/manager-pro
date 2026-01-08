@@ -378,10 +378,63 @@ html += `<div class="articulo-card">
 html += '</div>';
 document.getElementById('menuContainer').innerHTML = html;
 }
-function filtrarCategoria(categoria) {
-document.querySelectorAll('.categoria-btn').forEach(btn => btn.classList.remove('active'));
-event.target.classList.add('active');
+// Variable global para almacenar todos los artículos
+let articulosOriginales = [];
+
+// Modificar la función renderMenu para guardar los artículos originales
+function renderMenu(articulos) {
+  articulosOriginales = articulos; // Guardar copia original
+  
+  const categorias = [...new Set(articulos.map(a => a.categoria).filter(c => c))];
+  let html = '<div class="categorias-filtros"><button class="categoria-btn active" onclick="filtrarCategoria(\'all\')">Todos</button>';
+  categorias.forEach(cat => {
+    html += `<button class="categoria-btn" onclick="filtrarCategoria('${cat}')">${cat}</button>`;
+  });
+  html += '</div><div class="articulos-grid" id="articulosGrid">';
+  
+  // Renderizar todos los artículos inicialmente
+  articulos.forEach(art => {
+    html += `<div class="articulo-card">
+      <div class="articulo-nombre">${art.nombre}</div>
+      <div class="articulo-precio">$${art.precio.toLocaleString()}</div>
+      <div class="articulo-stock">Stock: ${art.stock}</div>
+      <button class="agregar-btn" onclick="agregarAlPedido('${art.id}', '${art.nombre}', ${art.precio})">+</button>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('menuContainer').innerHTML = html;
 }
+
+// Nueva función de filtrado
+function filtrarCategoria(categoria) {
+  // Actualizar botones activos
+  document.querySelectorAll('.categoria-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Filtrar artículos
+  let articulosFiltrados;
+  if (categoria === 'all') {
+    articulosFiltrados = articulosOriginales;
+  } else {
+    articulosFiltrados = articulosOriginales.filter(art => art.categoria === categoria);
+  }
+  
+  // Re-renderizar solo los artículos filtrados
+  const grid = document.getElementById('articulosGrid');
+  if (!grid) return;
+  
+  let html = '';
+  articulosFiltrados.forEach(art => {
+    html += `<div class="articulo-card">
+      <div class="articulo-nombre">${art.nombre}</div>
+      <div class="articulo-precio">$${art.precio.toLocaleString()}</div>
+      <div class="articulo-stock">Stock: ${art.stock}</div>
+      <button class="agregar-btn" onclick="agregarAlPedido('${art.id}', '${art.nombre}', ${art.precio})">+</button>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
 function seleccionarMesa(mesaId, mesaNumero) {
 if (currentMesaId) {
 carritosPorMesa[currentMesaId] = carritoLocal;
