@@ -4,12 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Panel de Mesero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e2e8f0; min-height: 100vh; padding: 16px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #1A1D21; color: #F0E6D2; min-height: 100vh; padding: 16px; }
     .container { max-width: 1200px; margin: 0 auto; }
     .header { 
-      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); 
+      background: linear-gradient(135deg, #C7794E 0%, #2F5D51 100%); 
       color: white; 
       padding: 20px; 
       border-radius: 16px; 
@@ -17,7 +20,11 @@
       display: flex; 
       justify-content: space-between; 
       align-items: center;
-      box-shadow: 0 8px 20px rgba(37, 117, 252, 0.3);
+      box-shadow: 0 8px 20px rgba(199, 121, 78, 0.3);
+    }
+    h1, h2, h3, .mesa-title, .stat-value, .pedido-total {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
     }
     .header h1 { font-size: 24px; font-weight: 700; }
     .header p { font-size: 14px; opacity: 0.9; }
@@ -31,31 +38,31 @@
       transition: all 0.2s;
     }
     .btn-primary { 
-      background: #6a11cb; 
+      background: #C7794E; 
       color: white; 
     }
     .btn-secondary { 
-      background: rgba(255,255,255,0.2); 
-      color: white; 
+      background: rgba(199, 121, 78, 0.2); 
+      color: #F0E6D2; 
     }
     .btn-success { 
-      background: linear-gradient(135deg, #ff8c00 0%, #ff2266 100%); 
+      background: linear-gradient(135deg, #C7794E 0%, #A65A3B 100%); 
       color: white; 
       width: 100%; 
       margin-top: 16px; 
       padding: 14px; 
       font-size: 18px; 
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(255, 34, 102, 0.3);
+      box-shadow: 0 4px 12px rgba(199, 121, 78, 0.3);
     }
     .card { 
-      background: rgba(30, 41, 59, 0.7); 
+      background: rgba(26, 29, 33, 0.8); 
       backdrop-filter: blur(10px);
       border-radius: 16px; 
       padding: 24px; 
       margin-bottom: 24px; 
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-      border: 1px solid rgba(106, 17, 203, 0.3);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 1px solid rgba(199, 121, 78, 0.2);
     }
     .error { text-align: center; padding: 40px; color: #f87171; }
     
@@ -78,9 +85,9 @@
     .mesa-item:hover { 
       background: rgba(51, 65, 85, 0.8); 
       transform: translateY(-3px);
-      border-color: #818cf8;
+      border-color: #C7794E;
     }
-    .mesa-number { font-weight: 700; font-size: 18px; color: #ff8c00; }
+    .mesa-number { font-weight: 700; font-size: 18px; color: #C7794E; }
     .mesa-cap { font-size: 13px; opacity: 0.8; }
     
     /* Pedido Mesa */
@@ -92,7 +99,7 @@
       padding-bottom: 16px; 
       border-bottom: 1px solid #334155;
     }
-    .mesa-title { font-size: 28px; font-weight: 800; color: #f8fafc; }
+    .mesa-title { font-size: 28px; font-weight: 800; color: #F0E6D2; }
     .pedido-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
     @media (max-width: 768px) {
       .pedido-layout { grid-template-columns: 1fr; }
@@ -110,7 +117,7 @@
       cursor: pointer; 
     }
     .categoria-btn.active { 
-      background: #6a11cb; 
+      background: #C7794E; 
       color: white; 
     }
     .articulos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
@@ -124,12 +131,12 @@
     .articulo-card:hover {
       transform: scale(1.03);
     }
-    .articulo-nombre { font-weight: 600; margin-bottom: 6px; font-size: 15px; color: #ff8c00; }
-    .articulo-precio { color: #34d399; font-weight: 700; font-size: 18px; margin-bottom: 4px; }
+    .articulo-nombre { font-weight: 600; margin-bottom: 6px; font-size: 15px; color: #C7794E; }
+    .articulo-precio { color: #8A9B68; font-weight: 700; font-size: 18px; margin-bottom: 4px; }
     .articulo-stock { font-size: 12px; color: #94a3b8; }
     .agregar-btn { 
-      background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%); 
-      color: #0f172a; 
+      background: linear-gradient(135deg, #8A9B68 0%, #6B7B54 100%); 
+      color: #1A1D21; 
       border: none; 
       padding: 6px 12px; 
       border-radius: 6px; 
@@ -159,20 +166,19 @@
       font-weight: 800; 
       text-align: right; 
       margin: 20px 0; 
-      color: #34d399; 
-      text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+      color: #8A9B68; 
     }
     
     /* Cierre de Caja */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 20px 0; }
     .stat-card { background: rgba(51, 65, 85, 0.6); padding: 16px; border-radius: 12px; text-align: center; }
-    .stat-value { font-size: 22px; font-weight: 700; margin: 8px 0; color: #ff8c00; }
+    .stat-value { font-size: 22px; font-weight: 700; margin: 8px 0; color: #C7794E; }
     .stat-label { font-size: 13px; opacity: 0.8; }
     
     /* DJ */
     .dj-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid #334155; }
     .dj-btn { 
-      background: linear-gradient(135deg, #ff2266 0%, #ff8c00 100%); 
+      background: linear-gradient(135deg, #8A9B68 0%, #C7794E 100%); 
       color: white; 
       padding: 12px; 
       border: none; 
@@ -181,6 +187,20 @@
       width: 100%; 
       margin-top: 16px;
       cursor: pointer;
+    }
+
+    /* Estados de mesas */
+    .mesa-estado.libre, .table-status.libre { 
+      background: #2F5D51; 
+      color: #F0E6D2; 
+    }
+    .mesa-estado.pendiente, .table-status.pendiente { 
+      background: #C7794E; 
+      color: #1A1D21; 
+    }
+    .mesa-estado.pagada, .table-status.pagada { 
+      background: #8A9B68; 
+      color: #1A1D21; 
     }
   </style>
 </head>
@@ -201,7 +221,7 @@
     <!-- Vista: Selección de Mesas -->
     <div id="view-mesas">
       <div class="card">
-        <h2 style="margin-bottom: 20px; color: #f8fafc;">🪑 Selecciona una Mesa</h2>
+        <h2 style="margin-bottom: 20px; color: #F0E6D2;">🪑 Selecciona una Mesa</h2>
         <div id="mesasContainer">
           <p style="text-align: center; color: #94a3b8;">Cargando mesas...</p>
         </div>
@@ -212,25 +232,25 @@
     <div id="view-pedido" style="display:none;">
       <div class="mesa-header">
         <div class="mesa-title">Mesa <span id="mesaNumero">?</span></div>
-        <div>Estado: <span id="mesaEstado" style="color: #fbbf24;">Pendiente</span></div>
+        <div>Estado: <span id="mesaEstado" class="mesa-estado pendiente">Pendiente</span></div>
       </div>
       
       <div class="pedido-layout">
         <!-- Menú + DJ -->
         <div class="card">
-          <h3 style="margin-bottom: 20px; color: #f8fafc;">🍷 Menú</h3>
+          <h3 style="margin-bottom: 20px; color: #F0E6D2;">🍷 Menú</h3>
           <div id="menuContainer">
             <p style="text-align: center; color: #94a3b8;">Cargando menú...</p>
           </div>
           
           <!-- DJ -->
           <div class="dj-section">
-            <h3 style="color: #f8fafc; margin-bottom: 12px;">🎵 Pedir Canción al DJ</h3>
+            <h3 style="color: #F0E6D2; margin-bottom: 12px;">🎵 Pedir Canción al DJ</h3>
             <div class="form-group">
-              <input type="text" id="cancionInput" placeholder="Nombre de la canción" style="width:100%; padding:10px; border-radius:8px; margin-bottom:8px; background:rgba(0,0,0,0.3); color:white; border:1px solid #334155;">
+              <input type="text" id="cancionInput" placeholder="Nombre de la canción" style="width:100%; padding:10px; border-radius:8px; margin-bottom:8px; background:rgba(0,0,0,0.3); color:#F0E6D2; border:1px solid #334155;">
             </div>
             <div class="form-group">
-              <input type="text" id="artistaInput" placeholder="Artista (opcional)" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); color:white; border:1px solid #334155;">
+              <input type="text" id="artistaInput" placeholder="Artista (opcional)" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); color:#F0E6D2; border:1px solid #334155;">
             </div>
             <button class="dj-btn" onclick="solicitarCancion()">Enviar al DJ</button>
           </div>
@@ -238,7 +258,7 @@
         
         <!-- Pedido Acumulado -->
         <div class="card">
-          <h3 style="margin-bottom: 20px; color: #f8fafc;">🛒 Pedido Actual</h3>
+          <h3 style="margin-bottom: 20px; color: #F0E6D2;">🛒 Pedido Actual</h3>
           <div id="pedidoAcumulado">
             <p style="text-align: center; color: #94a3b8;">No hay artículos</p>
           </div>
@@ -246,7 +266,7 @@
           
           <div class="form-group" style="margin: 20px 0;">
             <label style="display:block; margin-bottom:8px; color:#cbd5e1;">Forma de Pago</label>
-            <select id="formaPago" style="width:100%; padding:12px; border-radius:8px; background:rgba(0,0,0,0.3); color:white; border:1px solid #334155;">
+            <select id="formaPago" style="width:100%; padding:12px; border-radius:8px; background:rgba(0,0,0,0.3); color:#F0E6D2; border:1px solid #334155;">
               <option value="efectivo">Efectivo</option>
               <option value="tarjeta">Tarjeta</option>
               <option value="nequi">Nequi</option>
@@ -263,7 +283,7 @@
     <div id="view-cierre" style="display:none;">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h2 style="color:#f8fafc;">📊 Cierre de Caja - Hoy</h2>
+          <h2 style="color:#F0E6D2;">📊 Cierre de Caja - Hoy</h2>
           <button class="btn btn-secondary" onclick="volverAMesas()">← Volver</button>
         </div>
         
@@ -286,7 +306,7 @@
           </div>
         </div>
         
-        <h3 style="color:#f8fafc; margin:20px 0;">Top Artículos Vendidos</h3>
+        <h3 style="color:#F0E6D2; margin:20px 0;">Top Artículos Vendidos</h3>
         <div id="topArticulos">
           <p style="text-align:center; color:#94a3b8;">No hay ventas hoy</p>
         </div>
@@ -316,8 +336,8 @@
     let currentMesaId = null;
     let currentMesaNumero = null;
     let pedidoActivo = null;
-    // ✅ Almacena el carrito por cada mesa
     const carritosPorMesa = {};
+    let carritoLocal = [];
 
     // === FUNCIONES EXISTENTES SIN CAMBIOS ===
     function getMeseroData() {
@@ -342,13 +362,16 @@
         if (mesasZona.length > 0) {
           html += `<div class="zona-card"><div class="zona-title">${zona}</div>`;
           mesasZona.forEach(mesa => {
+            const estadoClass = mesa.estado === 'libre' ? 'libre' : mesa.estado === 'pendiente' ? 'pendiente' : 'pagada';
             html += `<div class="mesa-item" onclick="seleccionarMesa('${mesa.id}', '${mesa.numero}')">
               <div>
                 <div class="mesa-number">Mesa ${mesa.numero}</div>
                 <div class="mesa-cap">Cap: ${mesa.capacidad}</div>
               </div>
-              <div style="text-align: right; font-weight: bold; color: ${mesa.estado === 'pendiente' ? '#fbbf24' : mesa.estado === 'pagada' ? '#34d399' : '#94a3b8'}">
-                ${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? '⏳' : '✅'}
+              <div style="text-align: right; font-weight: bold;">
+                <span class="mesa-estado ${estadoClass}">
+                  ${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? 'Pendiente' : 'Pagada'}
+                </span>
               </div>
             </div>`;
           });
@@ -382,30 +405,23 @@
       event.target.classList.add('active');
     }
 
-    // === FLUJO CORREGIDO: Persistencia por mesa ===
     function seleccionarMesa(mesaId, mesaNumero) {
-      // Guardar el carrito actual si existe
       if (currentMesaId) {
         carritosPorMesa[currentMesaId] = carritoLocal;
       }
-
       currentMesaId = mesaId;
       currentMesaNumero = mesaNumero;
-      // Restaurar el carrito de esta mesa o inicializar vacío
       carritoLocal = carritosPorMesa[mesaId] || [];
-      
       document.getElementById('mesaNumero').textContent = mesaNumero;
       document.getElementById('view-mesas').style.display = 'none';
       document.getElementById('view-pedido').style.display = 'block';
       document.getElementById('btnVolver').style.display = 'inline-block';
       document.getElementById('btnCierreCaja').style.display = 'none';
-      
       cargarArticulos(currentTenantId);
       cargarPedidoPendiente();
     }
 
     function volverAMesas() {
-      // ✅ NO se limpia carritoLocal aquí
       document.getElementById('view-mesas').style.display = 'block';
       document.getElementById('view-pedido').style.display = 'none';
       document.getElementById('view-cierre').style.display = 'none';
@@ -413,34 +429,25 @@
       document.getElementById('btnCierreCaja').style.display = 'inline-block';
     }
 
-    // Variable global para el carrito actual
-    let carritoLocal = [];
-
     async function cargarPedidoPendiente() {
       if (!currentMesaId || !currentTenantId) return;
-      
       try {
-        // Primero verificar si hay un pedido pendiente en Firestore
         const snapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
           .where('mesaId', '==', currentMesaId)
           .where('estado', '==', 'pendiente')
           .limit(1)
           .get();
-        
         if (!snapshot.empty) {
           const doc = snapshot.docs[0];
           pedidoActivo = { id: doc.id, ...doc.data() };
-          // Si hay un pedido en Firestore, usarlo (sobrescribe el local)
           carritoLocal = pedidoActivo.items || [];
           carritosPorMesa[currentMesaId] = [...carritoLocal];
         } else {
-          // Si no hay en Firestore, usar el carrito local guardado
           carritoLocal = carritosPorMesa[currentMesaId] || [];
         }
         actualizarVistaPedido();
       } catch (error) {
         console.error("Error al cargar pedido pendiente:", error);
-        // En caso de error, usar el carrito local
         carritoLocal = carritosPorMesa[currentMesaId] || [];
         actualizarVistaPedido();
       }
@@ -453,7 +460,6 @@
       } else {
         carritoLocal.push({ id: articuloId, nombre, precio, cantidad: 1 });
       }
-      // Guardar inmediatamente
       carritosPorMesa[currentMesaId] = [...carritoLocal];
       actualizarVistaPedido();
     }
@@ -473,7 +479,6 @@
     function actualizarVistaPedido() {
       const total = carritoLocal.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
       document.getElementById('totalPedido').textContent = total.toLocaleString();
-      
       if (carritoLocal.length === 0) {
         document.getElementById('pedidoAcumulado').innerHTML = '<p style="text-align: center; color: #94a3b8;">No hay artículos</p>';
         document.getElementById('btnPagar').disabled = true;
@@ -498,7 +503,6 @@
     async function procesarPagoActual() {
       if (carritoLocal.length === 0) return alert('⚠️ No hay artículos para pagar');
       const formaPago = document.getElementById('formaPago').value;
-      
       try {
         const total = carritoLocal.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
         let pedidoData = {
@@ -512,7 +516,6 @@
           formaPago: formaPago,
           pagadoAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-
         if (pedidoActivo) {
           await db.collection(`tenants/${currentTenantId}/pedidos`).doc(pedidoActivo.id).update(pedidoData);
         } else {
@@ -520,13 +523,9 @@
           const docRef = await db.collection(`tenants/${currentTenantId}/pedidos`).add(pedidoData);
           await db.collection(`tenants/${currentTenantId}/pedidos`).doc(docRef.id).update({ estado: 'pagada' });
         }
-
         await db.collection(`tenants/${currentTenantId}/mesas`).doc(currentMesaId).update({ estado: 'pagada' });
-        
-        // ✅ Limpiar solo el carrito de esta mesa después del pago
         delete carritosPorMesa[currentMesaId];
         carritoLocal = [];
-        
         alert('✅ Pago procesado exitosamente');
         volverAMesas();
         cargarMesas(currentTenantId);
@@ -535,7 +534,6 @@
       }
     }
 
-    // === MÓDULO DJ (RESTAURADO) ===
     async function solicitarCancion() {
       const cancion = document.getElementById('cancionInput').value;
       const artista = document.getElementById('artistaInput').value;
@@ -561,7 +559,6 @@
       }
     }
 
-    // === CIERRE DE CAJA SIN ÍNDICE ===
     function mostrarCierreCaja() {
       document.getElementById('view-mesas').style.display = 'none';
       document.getElementById('view-pedido').style.display = 'none';
@@ -572,26 +569,20 @@
 
     async function cargarCierreCaja() {
       if (!currentMesero?.id || !currentTenantId) return;
-      
       try {
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
         const hoyTimestamp = firebase.firestore.Timestamp.fromDate(hoy);
-        
-        // 🔥 Consulta sin .where('estado', '==', 'pagada') para evitar índice
         const pedidosSnapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
           .where('pagadoAt', '>=', hoyTimestamp)
           .get();
-        
         let totalVendido = 0;
         let mesas = new Set();
         let articulos = {};
         let pedidosCount = 0;
-        
         pedidosSnapshot.forEach(doc => {
           const p = doc.data();
-          // ✅ Filtrar en cliente
           if (p.estado === 'pagada') {
             totalVendido += p.total || 0;
             mesas.add(p.mesaId);
@@ -601,16 +592,13 @@
             });
           }
         });
-        
         document.getElementById('totalVendido').textContent = totalVendido.toLocaleString();
         document.getElementById('mesasAtendidas').textContent = mesas.size;
         document.getElementById('pedidosPagados').textContent = pedidosCount;
         document.getElementById('articulosVendidos').textContent = Object.values(articulos).reduce((a,b) => a+b, 0);
-        
         const topArticulos = Object.entries(articulos)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5);
-        
         if (topArticulos.length === 0) {
           document.getElementById('topArticulos').innerHTML = '<p style="text-align:center; color:#94a3b8;">No hay ventas hoy</p>';
         } else {
@@ -627,7 +615,6 @@
       }
     }
 
-    // === FUNCIONES EXISTENTES ===
     async function cargarMesas(tenantId) {
       try {
         const mesasSnapshot = await db.collection(`tenants/${tenantId}/mesas`).get();
@@ -650,7 +637,6 @@
       }
     }
 
-    // === INICIALIZACIÓN ===
     async function init() {
       try {
         const data = getMeseroData();
@@ -678,12 +664,11 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 
-<!-- Footer -->
-    <div style="text-align: center; margin-top: 30px; padding: 15px; color: #94a3b8; font-size: 13px; background: rgba(0,0,0,0.2); border-radius: 12px;">
-      <img src="https://raw.githubusercontent.com/appyem/imagenesappy/refs/heads/main/ChatGPT%20Image%2030%20dic%202025%2C%2007_50_08%20p.m..png" alt="AppyEmpresa S.A.S" style="width: 30px; height: 30px; object-fit: contain; vertical-align: middle; margin-right: 6px;">
-      Desarrollado por AppyEmpresa S.A.S
-    </div>
-
+  <!-- Footer -->
+  <div style="text-align: center; margin-top: 30px; padding: 15px; color: #94a3b8; font-size: 13px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+    <img src="https://raw.githubusercontent.com/appyem/imagenesappy/refs/heads/main/ChatGPT%20Image%2030%20dic%202025%2C%2007_50_08%20p.m..png" alt="AppyEmpresa S.A.S" style="width: 30px; height: 30px; object-fit: contain; vertical-align: middle; margin-right: 6px;">
+    Desarrollado por AppyEmpresa S.A.S
+  </div>
 </body>
 </html>
 
