@@ -463,16 +463,11 @@ body { background: #121826; color: #f1f5f9; min-height: 100vh; padding: 16px; li
     <!-- Dashboard -->
     <div id="dashboard">
       <div class="header">
-      <div>
-      <div style="display: flex; align-items: center; gap: 16px;">
-      <img src="https://raw.githubusercontent.com/appyem/imagenesappy/refs/heads/main/ChatGPT%20Image%206%20ene%202026%2C%2006_33_51%20p.m..png" alt="Manager Pro" style="width: 40px; height: 40px; object-fit: contain;">
-      <div>
-      <h1 style="font-size: 24px; font-weight: 700; margin: 0; color: white;">Manager Pro</h1>
-      <p id="tenantInfo" style="font-size: 12px; opacity: 0.9; margin: 4px 0 0 0;">Negocio: <span id="tenantIdDisplay"></span></p>
-      </div>
-      </div>
-      </div>
-      <button class="logout-btn" onclick="cerrarSesion()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Cerrar Sesión</button>
+        <div>
+          <h1 id="barName">Panel de Administrador</h1>
+          <p id="tenantInfo" style="font-size: 12px; opacity: 0.9;">Negocio: <span id="tenantIdDisplay"></span></p>
+        </div>
+        <button class="logout-btn" onclick="cerrarSesion()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Cerrar Sesión</button>
       </div>
       
       <div class="tabs">
