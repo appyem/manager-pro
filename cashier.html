@@ -570,20 +570,25 @@
     async function cargarCierreCaja() {
       if (!currentMesero?.id || !currentTenantId) return;
       try {
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const hoyTimestamp = firebase.firestore.Timestamp.fromDate(hoy);
+        // Obtener todos los pedidos PAGADOS del mesero (sin filtro de fecha en query)
         const pedidosSnapshot = await db.collection(`tenants/${currentTenantId}/pedidos`)
           .where('meseroId', '==', currentMesero.id)
-          .where('pagadoAt', '>=', hoyTimestamp)
+          .where('estado', '==', 'pagada')
           .get();
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const hoyMs = hoy.getTime(); // Trabajar en milisegundos
+
         let totalVendido = 0;
         let mesas = new Set();
         let articulos = {};
         let pedidosCount = 0;
+
         pedidosSnapshot.forEach(doc => {
           const p = doc.data();
-          if (p.estado === 'pagada') {
+          // Verificar si `pagadoAt` existe y está en el día de hoy
+          if (p.pagadoAt && p.pagadoAt.seconds * 1000 >= hoyMs) {
             totalVendido += p.total || 0;
             mesas.add(p.mesaId);
             pedidosCount++;
@@ -592,22 +597,27 @@
             });
           }
         });
+
         document.getElementById('totalVendido').textContent = totalVendido.toLocaleString();
         document.getElementById('mesasAtendidas').textContent = mesas.size;
         document.getElementById('pedidosPagados').textContent = pedidosCount;
         document.getElementById('articulosVendidos').textContent = Object.values(articulos).reduce((a,b) => a+b, 0);
+
+        // Top artículos
         const topArticulos = Object.entries(articulos)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5);
+
+        const topContainer = document.getElementById('topArticulos');
         if (topArticulos.length === 0) {
-          document.getElementById('topArticulos').innerHTML = '<p style="text-align:center; color:#94a3b8;">No hay ventas hoy</p>';
+          topContainer.innerHTML = '<p style="text-align:center; color:#94a3b8;">No hay ventas hoy</p>';
         } else {
           let html = '<ul style="list-style:none; padding:0;">';
           topArticulos.forEach(([nombre, cantidad]) => {
             html += `<li style="padding:8px 0; border-bottom:1px solid #334155;">${nombre} • ${cantidad} veces</li>`;
           });
           html += '</ul>';
-          document.getElementById('topArticulos').innerHTML = html;
+          topContainer.innerHTML = html;
         }
       } catch (error) {
         console.error("Error al cargar cierre de caja:", error);
