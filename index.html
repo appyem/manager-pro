@@ -778,6 +778,9 @@ body {
     </div>
   </div>
 
+
+  
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -910,7 +913,6 @@ body {
         document.getElementById('reporteDesde').valueAsDate = lastWeek;
         cargarPedidosAdmin();
       } else if (tabName === 'mesas') {
-        // ✅ FORZAR CARGA DE MESAS AL ENTRAR A LA PESTAÑA
         if (tenantId) {
           db.collection(`tenants/${tenantId}/mesas`).get().then(snapshot => {
             const mesas = [];
@@ -921,6 +923,9 @@ body {
             document.getElementById('mesasList').innerHTML = `<p style="text-align: center; color: #ef4444;">Error: ${error.message}</p>`;
           });
         }
+      } else if (tabName === 'qr') {
+        // ✅ CARGAR EL CÓDIGO QR AL ENTRAR A LA PESTAÑA
+        cargarCodigoQR();
       }
     };
 
