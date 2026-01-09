@@ -721,6 +721,33 @@ body {
             </div>
           </div>
         </div>
+
+
+      <!-- QR Pago Tab -->
+      <div class="tab-content" id="tab-qr">
+        <div class="form-section">
+          <h2>📱 Código QR de Pago</h2>
+          <p style="color: #94a3b8; margin-bottom: 20px;">Sube el código QR de tu cuenta Nequi, Daviplata o transferencia.</p>
+
+          <div style="text-align: center; margin: 20px 0;">
+            <div style="width: 200px; height: 200px; margin: 0 auto; border: 2px dashed #334155; border-radius: 12px; background: #0f172a; display: flex; align-items: center; justify-content: center; position: relative;">
+              <img id="qrPreviewImage" src="" alt="Código QR" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+              <span id="qrPlaceholderText" style="color: #94a3b8; font-size: 14px;">No hay código QR cargado</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <input type="file" id="qrFileInput" accept="image/png, image/jpeg" style="width: 100%; padding: 10px; background: #0f172a; border: 2px solid #334155; border-radius: 8px; color: white; font-size: 14px;">
+          </div>
+
+          <button class="submit-btn" onclick="subirCodigoQR()" style="margin-top: 12px; width: 100%;">📤 Subir Código QR</button>
+
+          <div style="margin-top: 15px; padding: 12px; background: rgba(51, 65, 85, 0.3); border-radius: 8px; font-size: 12px; color: #cbd5e1;">
+            <strong>Formatos aceptados:</strong> PNG, JPG<br>
+            <strong>Tamaño máximo:</strong> 1MB
+          </div>
+        </div>
+      </div>
         
         <div class="stats-grid">
           <div class="stat-card total">
@@ -1440,6 +1467,97 @@ body {
       const mensaje = `Hola ${nombre}, accede aquí: ${url}`;
       window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
     };
+
+  // === FUNCIONES PARA CÓDIGO QR DE PAGO (SIN STORAGE) ===
+    function convertirImagenABase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    async function subirCodigoQR() {
+      const fileInput = document.getElementById('qrFileInput');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        alert('⚠️ Por favor selecciona una imagen del código QR.');
+        return;
+      }
+      
+      if (!tenantId) {
+        alert('❌ No hay sesión activa.');
+        return;
+      }
+      
+      const validTypes = ['image/png', 'image/jpeg'];
+      if (!validTypes.includes(file.type)) {
+        alert('❌ Solo se permiten archivos PNG o JPG.');
+        return;
+      }
+      
+      if (file.size > 1048576) {
+        alert('❌ La imagen debe pesar menos de 1MB.');
+        return;
+      }
+      
+      try {
+        const originalBtnText = document.querySelector('.submit-btn').textContent;
+        document.querySelector('.submit-btn').textContent = '⏳ Procesando...';
+        
+        const base64String = await convertirImagenABase64(file);
+        
+        await db.collection('tenants').doc(tenantId).collection('configuracion').doc('qrPago').set({ 
+          data: base64String,
+          mimeType: file.type,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        alert('✅ Código QR subido exitosamente.');
+        cargarCodigoQR();
+        document.querySelector('.submit-btn').textContent = originalBtnText;
+      } catch (error) {
+        console.error('Error al subir QR:', error);
+        alert('❌ Error al procesar la imagen: ' + error.message);
+        document.querySelector('.submit-btn').textContent = '📤 Subir Código QR';
+      }
+    }
+
+    async function cargarCodigoQR() {
+      if (!tenantId) return;
+      
+      try {
+        const qrDoc = await db.collection('tenants').doc(tenantId).collection('configuracion').doc('qrPago').get();
+        const img = document.getElementById('qrPreviewImage');
+        const placeholder = document.getElementById('qrPlaceholderText');
+        
+        if (qrDoc.exists && qrDoc.data().data) {
+          const mimeType = qrDoc.data().mimeType || 'image/png';
+          img.src = `${mimeType};base64,${qrDoc.data().data}`;
+          img.style.display = 'block';
+          placeholder.style.display = 'none';
+        } else {
+          img.style.display = 'none';
+          placeholder.style.display = 'block';
+          placeholder.textContent = 'No hay código QR cargado';
+        }
+      } catch (error) {
+        console.error('Error al cargar QR:', error);
+        document.getElementById('qrPlaceholderText').textContent = 'Error al cargar QR';
+      }
+    }
+
+    // Modificar showTab para cargar QR automáticamente
+    const originalShowTab = window.showTab;
+    window.showTab = function(tabName) {
+      originalShowTab(tabName);
+      if (tabName === 'qr') {
+        cargarCodigoQR();
+      }
+    };
+
   </script>
 
   <!-- Footer -->
