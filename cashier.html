@@ -240,6 +240,21 @@ background: #8A9B68;
 color: #1A1D21;
 }
 
+/* === ICONO DE MESA PERSONALIZADO === */
+.mesa-icono {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.mesa-info {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #FFFFFF;
+}
+
 </style>
 </head>
 <body>
@@ -380,30 +395,33 @@ return null;
 }
 }
 function renderMesas(mesas) {
-const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
-let html = '';
-zonas.forEach(zona => {
-const mesasZona = mesas.filter(m => m.ubicacion === zona);
-if (mesasZona.length > 0) {
-html += `<div class="zona-card"><div class="zona-title">${zona}</div>`;
-mesasZona.forEach(mesa => {
-const estadoClass = mesa.estado === 'libre' ? 'libre' : mesa.estado === 'pendiente' ? 'pendiente' : 'pagada';
-html += `<div class="mesa-item" onclick="seleccionarMesa('${mesa.id}', '${mesa.numero}')">
-<div>
-<div class="mesa-number">Mesa ${mesa.numero}</div>
-<div class="mesa-cap">Cap: ${mesa.capacidad}</div>
-</div>
-<div style="text-align: right; font-weight: bold;">
-<span class="mesa-estado ${estadoClass}">
-${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? 'Pendiente' : 'Pagada'}
-</span>
-</div>
-</div>`;
-});
-html += '</div>';
-}
-});
-document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #94a3b8;">No hay mesas disponibles</p>';
+  const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
+  let html = '';
+  zonas.forEach(zona => {
+    const mesasZona = mesas.filter(m => m.ubicacion === zona);
+    if (mesasZona.length > 0) {
+      html += `<div class="zona-card"><div class="zona-title">${zona}</div>`;
+      mesasZona.forEach(mesa => {
+        const estadoClass = mesa.estado === 'libre' ? 'libre' : mesa.estado === 'pendiente' ? 'pendiente' : 'pagada';
+        html += `<div class="mesa-item" onclick="seleccionarMesa('${mesa.id}', '${mesa.numero}')">
+          <div>
+            <div class="mesa-info">
+              <img src="https://raw.githubusercontent.com/appyem/imagens-manager-pro/refs/heads/main/icono%20mesa.jpg" alt="Mesa" class="mesa-icono">
+              ${mesa.numero}
+            </div>
+            <div class="mesa-cap">Cap: ${mesa.capacidad}</div>
+          </div>
+          <div style="text-align: right; font-weight: bold;">
+            <span class="mesa-estado ${estadoClass}">
+              ${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? 'Pendiente' : 'Pagada'}
+            </span>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+  });
+  document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #94a3b8;">No hay mesas disponibles</p>';
 }
 function renderMenu(articulos) {
 const categorias = [...new Set(articulos.map(a => a.categoria).filter(c => c))];
