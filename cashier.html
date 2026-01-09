@@ -240,39 +240,6 @@ background: #8A9B68;
 color: #1A1D21;
 }
 
-/* === SPRITE DE ICONOS Y ANIMACIONES === */
-.icon-sprite {
-  display: block;
-  width: 64px;
-  height: 64px;
-  background-image: url('https://raw.githubusercontent.com/appyem/imagens-manager-pro/refs/heads/main/ChatGPT%20Image%208%20ene%202026%2C%2006_55_04%20p.m..png');
-  background-size: 448px 64px; /* 7 iconos × 64px */
-  margin: 0 auto 12px;
-  image-rendering: -webkit-crisp-edges;
-  image-rendering: pixelated;
-}
-
-.icon-mesa-libre { background-position: 0 0; }
-.icon-mesa-pendiente { background-position: -64px 0; }
-.icon-mesa-pagada { background-position: -128px 0; }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.9; }
-}
-@keyframes glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(138, 155, 104, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(138, 155, 104, 0); }
-}
-
-.icon-mesa-libre { animation: float 3s ease-in-out infinite; }
-.icon-mesa-pendiente { animation: pulse 2s ease-in-out infinite; }
-.icon-mesa-pagada { animation: glow 2s ease-out infinite; }
-
 </style>
 </head>
 <body>
@@ -413,35 +380,31 @@ return null;
 }
 }
 function renderMesas(mesas) {
-  const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
-  let html = '';
-  zonas.forEach(zona => {
-    const mesasZona = mesas.filter(m => m.ubicacion === zona);
-    if (mesasZona.length > 0) {
-      html += `<div class="zona-card"><div class="zona-title">${zona}</div>`;
-      mesasZona.forEach(mesa => {
-        const estadoClass = mesa.estado === 'libre' ? 'libre' : mesa.estado === 'pendiente' ? 'pendiente' : 'pagada';
-        const iconClass = mesa.estado === 'libre' ? 'icon-mesa-libre' : 
-                         mesa.estado === 'pendiente' ? 'icon-mesa-pendiente' : 'icon-mesa-pagada';
-        
-        html += `<div class="mesa-item" onclick="seleccionarMesa('${mesa.id}', '${mesa.numero}')">
-          <div style="text-align: center;">
-            <div class="icon-sprite ${iconClass}"></div>
-            <div class="mesa-cap">Cap: ${mesa.capacidad}</div>
-          </div>
-          <div style="text-align: right; font-weight: bold;">
-            <span class="mesa-estado ${estadoClass}">
-              ${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? 'Pendiente' : 'Pagada'}
-            </span>
-          </div>
-        </div>`;
-      });
-      html += '</div>';
-    }
-  });
-  document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #94a3b8;">No hay mesas disponibles</p>';
+const zonas = ['Terraza', 'Bar Principal', 'Zona VIP', 'Pista de Baile'];
+let html = '';
+zonas.forEach(zona => {
+const mesasZona = mesas.filter(m => m.ubicacion === zona);
+if (mesasZona.length > 0) {
+html += `<div class="zona-card"><div class="zona-title">${zona}</div>`;
+mesasZona.forEach(mesa => {
+const estadoClass = mesa.estado === 'libre' ? 'libre' : mesa.estado === 'pendiente' ? 'pendiente' : 'pagada';
+html += `<div class="mesa-item" onclick="seleccionarMesa('${mesa.id}', '${mesa.numero}')">
+<div>
+<div class="mesa-number">Mesa ${mesa.numero}</div>
+<div class="mesa-cap">Cap: ${mesa.capacidad}</div>
+</div>
+<div style="text-align: right; font-weight: bold;">
+<span class="mesa-estado ${estadoClass}">
+${mesa.estado === 'libre' ? 'Libre' : mesa.estado === 'pendiente' ? 'Pendiente' : 'Pagada'}
+</span>
+</div>
+</div>`;
+});
+html += '</div>';
 }
-
+});
+document.getElementById('mesasContainer').innerHTML = html || '<p style="text-align: center; color: #94a3b8;">No hay mesas disponibles</p>';
+}
 function renderMenu(articulos) {
 const categorias = [...new Set(articulos.map(a => a.categoria).filter(c => c))];
 let html = '<div class="categorias-filtros"><button class="categoria-btn active" onclick="filtrarCategoria(\'all\')">Todos</button>';
