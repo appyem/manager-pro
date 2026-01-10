@@ -1518,8 +1518,7 @@ body {
         const base64String = await convertirImagenABase64(file);
         
         await db.collection('tenants').doc(tenantId).collection('configuracion').doc('qrPago').set({ 
-          data: base64String,
-          mimeType: file.type,
+          base64String: base64String,          mimeType: file.type,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
@@ -1541,9 +1540,9 @@ body {
         const img = document.getElementById('qrPreviewImage');
         const placeholder = document.getElementById('qrPlaceholderText');
         
-        if (qrDoc.exists && qrDoc.data().data) {
+        if (qrDoc.exists && qrDoc.data().base64String) {
           const mimeType = qrDoc.data().mimeType || 'image/png';
-          img.src = `${mimeType};base64,${qrDoc.data().data}`;
+          img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
           img.style.display = 'block';
           placeholder.style.display = 'none';
         } else {
