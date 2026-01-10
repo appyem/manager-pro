@@ -838,9 +838,10 @@ async function cargarQrDesdeAdmin() {
     const placeholder = document.getElementById('qrPlaceholderMesero');
     const contenedor = document.getElementById('contenedorQr');
     
-    if (qrDoc.exists && qrDoc.data().base64String) { // ✅ CAMBIADO DE "data" a "base64String"
+    // ✅ CORREGIDO: Usar "data" en lugar de "base64String"
+    if (qrDoc.exists && qrDoc.data().data) {
       const mimeType = qrDoc.data().mimeType || 'image/png';
-      img.src = `${mimeType};base64,${qrDoc.data().base64String}`; // ✅ CORREGIDO AQUÍ TAMBIÉN
+      img.src = `${mimeType};base64,${qrDoc.data().data}`;
       img.style.display = 'block';
       placeholder.style.display = 'none';
       contenedor.style.display = 'block';
