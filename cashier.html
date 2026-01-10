@@ -853,15 +853,38 @@ async function cargarQrDesdeAdmin() {
     document.getElementById('contenedorQr').style.display = 'none';
   }
 }
-// Mostrar QR solo para Nequi o Daviplata
-document.getElementById('formaPago').addEventListener('change', function() {
+// Cargar y mostrar QR solo cuando se selecciona Nequi/Daviplata
+document.getElementById('formaPago').addEventListener('change', async function() {
   const contenedorQr = document.getElementById('contenedorQr');
+  
   if (this.value === 'nequi' || this.value === 'daviplata') {
-    contenedorQr.style.display = 'block';
-    // Cargar QR si no se ha cargado antes
-    if (!window.qrCargado) {
-      cargarQrDesdeAdmin();
-      window.qrCargado = true;
+    // Asegurar que currentTenantId esté disponible
+    if (!currentTenantId) {
+      contenedorQr.style.display = 'none';
+      return;
+    }
+    
+    try {
+      contenedorQr.style.display = 'block';
+      const placeholder = document.getElementById('qrPlaceholderMesero');
+      placeholder.textContent = 'Cargando código QR...';
+      
+      const qrDoc = await db.collection('tenants').doc(currentTenantId).collection('configuracion').doc('qrPago').get();
+      
+      if (qrDoc.exists && qrDoc.data().data) {
+        const mimeType = qrDoc.data().mimeType || 'image/png';
+        const img = document.getElementById('qrPagoMesero');
+        img.src = `${mimeType};base64,${qrDoc.data().data}`;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        placeholder.textContent = 'No hay código QR configurado';
+        placeholder.style.display = 'block';
+        document.getElementById('qrPagoMesero').style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Error al cargar QR:', error);
+      document.getElementById('qrPlaceholderMesero').textContent = 'Error al cargar QR';
     }
   } else {
     contenedorQr.style.display = 'none';
