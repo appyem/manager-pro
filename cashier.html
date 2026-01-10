@@ -326,6 +326,12 @@ color: #1A1D21;
 <option value="daviplata">Daviplata</option>
 </select>
 </div>
+<div id="contenedorQr" style="text-align: center; margin: 20px 0; display: none;">
+  <div style="width: 200px; height: 200px; margin: 0 auto; border: 2px dashed #334155; border-radius: 12px; background: #0f172a; display: flex; align-items: center; justify-content: center;">
+    <img id="qrPagoMesero" src="" alt="Código QR de Pago" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+    <span id="qrPlaceholderMesero" style="color: #94a3b8; font-size: 14px;">Cargando código QR...</span>
+  </div>
+</div>
 <button id="btnRealizarPedido" class="btn btn-secondary" style="margin-bottom:12px; width:100%;" onclick="realizarPedido()">📤 Realizar Pedido</button>
 <button id="btnPagar" class="btn btn-success" onclick="procesarPagoActual()" disabled>✅ Pagar Pedido</button>
 </div>
@@ -822,6 +828,44 @@ Volver al Login
 }
 }
 document.addEventListener('DOMContentLoaded', init);
+// Cargar QR del admin (almacenado como base64 en Firestore)
+async function cargarQrDesdeAdmin() {
+  if (!currentTenantId) return;
+  
+  try {
+    const qrDoc = await db.collection('tenants').doc(currentTenantId).collection('configuracion').doc('qrPago').get();
+    const img = document.getElementById('qrPagoMesero');
+    const placeholder = document.getElementById('qrPlaceholderMesero');
+    const contenedor = document.getElementById('contenedorQr');
+    
+    if (qrDoc.exists && qrDoc.data().data) {
+      const mimeType = qrDoc.data().mimeType || 'image/png';
+      img.src = `${mimeType};base64,${qrDoc.data().data}`;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+      contenedor.style.display = 'block';
+    } else {
+      contenedor.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error al cargar QR en mesero:', error);
+    document.getElementById('contenedorQr').style.display = 'none';
+  }
+}
+// Mostrar QR solo para Nequi o Daviplata
+document.getElementById('formaPago').addEventListener('change', function() {
+  const contenedorQr = document.getElementById('contenedorQr');
+  if (this.value === 'nequi' || this.value === 'daviplata') {
+    contenedorQr.style.display = 'block';
+    // Cargar QR si no se ha cargado antes
+    if (!window.qrCargado) {
+      cargarQrDesdeAdmin();
+      window.qrCargado = true;
+    }
+  } else {
+    contenedorQr.style.display = 'none';
+  }
+});
 </script>
 <!-- Footer -->
 <div style="text-align: center; margin-top: 30px; padding: 15px; color: #94a3b8; font-size: 13px; background: rgba(0,0,0,0.2); border-radius: 12px;">
