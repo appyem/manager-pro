@@ -838,10 +838,10 @@ async function cargarQrDesdeAdmin() {
     const placeholder = document.getElementById('qrPlaceholderMesero');
     const contenedor = document.getElementById('contenedorQr');
     
-    // ✅ CORREGIDO: Usar "base64String" (el nombre real del campo)
-    if (qrDoc.exists && qrDoc.data().base64String) {
+    // ✅ CORREGIDO: Usar "data" (el nombre REAL del campo en Firestore)
+    if (qrDoc.exists && qrDoc.data().data) {
       const mimeType = qrDoc.data().mimeType || 'image/png';
-      img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
+      img.src = `${mimeType};base64,${qrDoc.data().data}`;
       img.style.display = 'block';
       placeholder.style.display = 'none';
       contenedor.style.display = 'block';
@@ -871,11 +871,11 @@ document.getElementById('formaPago').addEventListener('change', async function()
       
       const qrDoc = await db.collection('tenants').doc(currentTenantId).collection('configuracion').doc('qrPago').get();
       
-      // ✅ CORREGIDO: Usar "base64String"
-      if (qrDoc.exists && qrDoc.data().base64String) {
+      // ✅ CORREGIDO: Usar "data" (el nombre REAL del campo)
+      if (qrDoc.exists && qrDoc.data().data) {
         const mimeType = qrDoc.data().mimeType || 'image/png';
         const img = document.getElementById('qrPagoMesero');
-        img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
+        img.src = `${mimeType};base64,${qrDoc.data().data}`;
         img.style.display = 'block';
         placeholder.style.display = 'none';
       } else {
