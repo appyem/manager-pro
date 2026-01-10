@@ -834,11 +834,13 @@ async function cargarQrDesdeAdmin() {
   
   try {
     const qrDoc = await db.collection('tenants').doc(currentTenantId).collection('configuracion').doc('qrPago').get();
+    
+    console.log("Documento QR:", qrDoc.exists ? qrDoc.data() : "No existe");
+    
     const img = document.getElementById('qrPagoMesero');
     const placeholder = document.getElementById('qrPlaceholderMesero');
     const contenedor = document.getElementById('contenedorQr');
     
-    // ✅ CORREGIDO: Usar "base64String" (el nombre REAL del campo en Firestore)
     if (qrDoc.exists && qrDoc.data().base64String) {
       const mimeType = qrDoc.data().mimeType || 'image/png';
       img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
@@ -846,11 +848,11 @@ async function cargarQrDesdeAdmin() {
       placeholder.style.display = 'none';
       contenedor.style.display = 'block';
     } else {
-      contenedor.style.display = 'none';
+      placeholder.textContent = 'Campo base64String vacío o no existe';
+      contenedor.style.display = 'block';
     }
   } catch (error) {
-    console.error('Error al cargar QR en mesero:', error);
-    document.getElementById('contenedorQr').style.display = 'none';
+    console.error('Error al cargar QR:', error);
   }
 }
 
