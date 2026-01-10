@@ -838,10 +838,10 @@ async function cargarQrDesdeAdmin() {
     const placeholder = document.getElementById('qrPlaceholderMesero');
     const contenedor = document.getElementById('contenedorQr');
     
-    // ✅ CORREGIDO: Usar "data" en lugar de "base64String"
-    if (qrDoc.exists && qrDoc.data().data) {
+    // ✅ CORREGIDO: Usar "base64String" (el nombre real del campo)
+    if (qrDoc.exists && qrDoc.data().base64String) {
       const mimeType = qrDoc.data().mimeType || 'image/png';
-      img.src = `${mimeType};base64,${qrDoc.data().data}`;
+      img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
       img.style.display = 'block';
       placeholder.style.display = 'none';
       contenedor.style.display = 'block';
@@ -853,12 +853,12 @@ async function cargarQrDesdeAdmin() {
     document.getElementById('contenedorQr').style.display = 'none';
   }
 }
+
 // Cargar y mostrar QR solo cuando se selecciona Nequi/Daviplata
 document.getElementById('formaPago').addEventListener('change', async function() {
   const contenedorQr = document.getElementById('contenedorQr');
   
   if (this.value === 'nequi' || this.value === 'daviplata') {
-    // Asegurar que currentTenantId esté disponible
     if (!currentTenantId) {
       contenedorQr.style.display = 'none';
       return;
@@ -871,10 +871,11 @@ document.getElementById('formaPago').addEventListener('change', async function()
       
       const qrDoc = await db.collection('tenants').doc(currentTenantId).collection('configuracion').doc('qrPago').get();
       
-      if (qrDoc.exists && qrDoc.data().data) {
+      // ✅ CORREGIDO: Usar "base64String"
+      if (qrDoc.exists && qrDoc.data().base64String) {
         const mimeType = qrDoc.data().mimeType || 'image/png';
         const img = document.getElementById('qrPagoMesero');
-        img.src = `${mimeType};base64,${qrDoc.data().data}`;
+        img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
         img.style.display = 'block';
         placeholder.style.display = 'none';
       } else {
