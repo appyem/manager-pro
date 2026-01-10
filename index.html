@@ -1542,7 +1542,7 @@ body {
         
         if (qrDoc.exists && qrDoc.data().base64String) {
           const mimeType = qrDoc.data().mimeType || 'image/png';
-          img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
+          img.src = `data:${mimeType};base64,${qrDoc.data().base64String}`;
           img.style.display = 'block';
           placeholder.style.display = 'none';
         } else {
