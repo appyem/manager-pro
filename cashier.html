@@ -318,13 +318,13 @@ Cierre de Caja - Hoy
 </div>
 <p class="text-[10px] font-bold uppercase tracking-wide">Mesas</p>
 </a>
-<a class="flex flex-col items-center gap-1 text-white/40" href="#">
+<a class="flex flex-col items-center gap-1 text-white/40" href="#" onclick="mostrarPedidos(); return false;">
 <div class="h-8 flex items-center justify-center">
 <span class="material-symbols-outlined text-[28px]">receipt_long</span>
 </div>
 <p class="text-[10px] font-bold uppercase tracking-wide">Pedidos</p>
 </a>
-<a class="flex flex-col items-center gap-1 text-white/40" href="#">
+<a class="flex flex-col items-center gap-1 text-white/40" href="#" onclick="mostrarDj(); return false;">
 <div class="h-8 flex items-center justify-center">
 <span class="material-symbols-outlined text-[28px]">music_note</span>
 </div>
@@ -387,8 +387,9 @@ let chipsHtml = '';
 zonas.forEach(zona => {
   const tieneMesas = mesas.some(m => m.ubicacion === zona);
   if (tieneMesas) {
-    chipsHtml += `<div class="flex h-10 shrink-0 items-center justify-center rounded-xl glass px-5">
-      <p class="text-white/70 text-sm font-medium">${zona}</p>
+    const isActive = zona === 'Bar Principal'; // Asumimos Bar Principal como activo por defecto
+    chipsHtml += `<div class="flex h-10 shrink-0 items-center justify-center rounded-xl ${isActive ? 'bg-primary' : 'glass'} px-5">
+      <p class="text-${isActive ? 'white' : 'white/70'} text-sm font-${isActive ? 'bold' : 'medium'}">${zona}</p>
     </div>`;
   }
 });
@@ -509,7 +510,6 @@ carritoLocal = carritosPorMesa[mesaId] || [];
 document.getElementById('mesaNumero').textContent = mesaNumero;
 document.getElementById('view-mesas').classList.add('hidden');
 document.getElementById('view-pedido').classList.remove('hidden');
-document.getElementById('btnVolver').style.display = 'none'; // Ya no se necesita con el navbar
 cargarArticulos(currentTenantId);
 cargarPedidoPendiente();
 // Actualizar estado de la mesa en UI
@@ -526,6 +526,17 @@ function mostrarCierreCaja() {
 document.getElementById('view-mesas').classList.add('hidden');
 document.getElementById('view-pedido').classList.add('hidden');
 document.getElementById('view-cierre').classList.remove('hidden');
+}
+
+// Funciones auxiliares para el menú inferior
+function mostrarPedidos() {
+document.getElementById('view-mesas').classList.add('hidden');
+document.getElementById('view-pedido').classList.remove('hidden');
+document.getElementById('view-cierre').classList.add('hidden');
+}
+
+function mostrarDj() {
+alert('Funcionalidad DJ no implementada en esta vista');
 }
 
 async function cargarPedidoPendiente() {
@@ -826,9 +837,9 @@ const img = document.getElementById('qrPagoMesero');
 const placeholder = document.getElementById('qrPlaceholderMesero');
 const contenedor = document.getElementById('contenedorQr');
     
-if (qrDoc.exists && qrDoc.data().base64String) {
+if (qrDoc.exists && qrDoc.data().data) {
 const mimeType = qrDoc.data().mimeType || 'image/png';
-img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
+img.src = `${mimeType};base64,${qrDoc.data().data}`;
 img.style.display = 'block';
 placeholder.style.display = 'none';
 contenedor.style.display = 'block';
