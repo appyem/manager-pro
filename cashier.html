@@ -6,9 +6,8 @@
 <title>Panel de Mesero</title>
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
 tailwind.config = {
   darkMode: "class",
@@ -387,9 +386,8 @@ let chipsHtml = '';
 zonas.forEach(zona => {
   const tieneMesas = mesas.some(m => m.ubicacion === zona);
   if (tieneMesas) {
-    const isActive = zona === 'Bar Principal'; // Asumimos Bar Principal como activo por defecto
-    chipsHtml += `<div class="flex h-10 shrink-0 items-center justify-center rounded-xl ${isActive ? 'bg-primary' : 'glass'} px-5">
-      <p class="text-${isActive ? 'white' : 'white/70'} text-sm font-${isActive ? 'bold' : 'medium'}">${zona}</p>
+    chipsHtml += `<div class="flex h-10 shrink-0 items-center justify-center rounded-xl glass px-5">
+      <p class="text-white/70 text-sm font-medium">${zona}</p>
     </div>`;
   }
 });
@@ -837,9 +835,9 @@ const img = document.getElementById('qrPagoMesero');
 const placeholder = document.getElementById('qrPlaceholderMesero');
 const contenedor = document.getElementById('contenedorQr');
     
-if (qrDoc.exists && qrDoc.data().data) {
+if (qrDoc.exists && qrDoc.data().base64String) {
 const mimeType = qrDoc.data().mimeType || 'image/png';
-img.src = `${mimeType};base64,${qrDoc.data().data}`;
+img.src = `${mimeType};base64,${qrDoc.data().base64String}`;
 img.style.display = 'block';
 placeholder.style.display = 'none';
 contenedor.style.display = 'block';
